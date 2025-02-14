@@ -74,6 +74,8 @@ function string ProcessAction(string sAction, out string sLog)
 // Takes a batch of arguments, then determines
 // where all the quotes are, and makes sure that
 // spaces inside quotes are preserved.
+// 
+// Todo: make sure the quotes are removed
 function ParseQuotes(out array<string> args, string sLine)
 {
     local string currentArg;
@@ -106,7 +108,8 @@ function ParseQuotes(out array<string> args, string sLine)
             }
             else
             {
-                continue; // No valid end quote found, continue to next character
+            	// No valid end quote found, continue to next character
+                continue;
             }
         }
         else
@@ -121,7 +124,8 @@ function ParseQuotes(out array<string> args, string sLine)
                 newArgs.Insert(newArgs.Length, 1);
                 newArgs[newArgs.Length - 1] = currentArg;
 
-                i += iSpaceIndex; // Move past the space
+                // Move past the space
+                i += iSpaceIndex;
             }
             else
             {
@@ -130,7 +134,7 @@ function ParseQuotes(out array<string> args, string sLine)
                 newArgs.Insert(newArgs.Length, 1);
                 newArgs[newArgs.Length - 1] = currentArg;
 
-                break; // Exit loop as we've processed the entire string
+                break;
             }
         }
     }
@@ -201,8 +205,8 @@ function bool ParseActions(string sLine)
 function string ProcessCommand(string command, array<string> args, out string sLog)
 {
 	local int i;
-	local array<string> TokenArray;
 	local string sTemp;
+	local Actor aTemp;
 
 	// Cap all command input strings
 	command = Caps(command);
@@ -212,34 +216,30 @@ function string ProcessCommand(string command, array<string> args, out string sL
 		args[i] = Caps(args[i]);
 	}
 
+	// Clear the return value before starting
+	sReturn = "";
+
 	switch(command)
 	{
+		case "SETVARIABLE":
 		case "SETVAR":
-			if(args.Length != 1)
+			if(args.Length != 2)
 			{
-				sLog = "Wrong amount of arguments for SETVAR command!";
+				sLog = "Wrong amount of arguments for SETVARIABLE command!";
 
 				break;
 			}
 
-			TokenArray = U.Split(args[0], "=");
+			SetProperty(args[0], args[1]);
 
-			if(TokenArray.Length != 2)
-			{
-				sLog = "SETVAR declaration is invalid!";
-
-				break;
-			}
-
-			SetProperty(TokenArray[0], TokenArray[1]);
-
-			sLog = "Variable" @ TokenArray[0] @ "set to" @ TokenArray[1] $ ".";
+			sLog = "Variable" @ args[0] @ "set to" @ args[1] $ ".";
 
 			break;
+		case "GETVARIABLE":
 		case "GETVAR":
 			if(args.Length != 1)
 			{
-				sLog = "Wrong amount of arguments for GETVAR command!";
+				sLog = "Wrong amount of arguments for GETVARIABLE command!";
 
 				break;
 			}
@@ -249,8 +249,103 @@ function string ProcessCommand(string command, array<string> args, out string sL
 			sLog = "Variable" @ args[0] @ "is equal to" @ sTemp $ ".";
 
 			return sTemp;
+		case "CONSOLECOMMAND":
+		case "CC":
+			if(args.Length != 1)
+			{
+				sLog = "Wrong amount of arguments for CONSOLECOMMAND command!";
+
+				break;
+			}
+
+			sLog = "Running console command:" @ args[0] $ ".";
+
+			return U.CC(args[0]);
+		case "GETHEROPAWN":
+		case "GETHP":
+			sTemp = string(U.GetHP());
+
+			sLog = "Getting hero pawn. It is currently:" @ sTemp $ ".";
+
+			return sTemp;
+		case "GETINVENTORYCARRIERPAWN":
+		case "GETICP":
+			sTemp = string(U.GetICP());
+
+			sLog = "Getting inventory carrier pawn. It is currently:" @ sTemp $ ".";
+
+			return sTemp;
+		case "SETACTOR":
+			if(args.Length != 3)
+			{
+				sLog = "Wrong amount of arguments for SETACTOR command!";
+
+				break;
+			}
+
+			aTemp = Actor(FindObject(args[0], class'Actor'));
+
+			if(aTemp == none)
+			{
+				sLog = "SETACTOR cannot find actor" @ args[0] $ "!";
+
+				break;
+			}
+
+			aTemp.SetPropertyText(args[1], args[2]);
+
+			sLog = "Variable" @ args[1] @ "on actor" @ args[0] @ "set to" @ args[2] $ ".";
+
+			break;
+		case "GETACTOR":
+			if(args.Length != 2)
+			{
+				sLog = "Wrong amount of arguments for GETACTOR command!";
+
+				break;
+			}
+
+			aTemp = Actor(FindObject(args[0], class'Actor'));
+
+			if(aTemp == none)
+			{
+				sLog = "SETACTOR cannot find actor" @ args[0] $ "!";
+
+				break;
+			}
+
+			sTemp = aTemp.GetPropertyText(args[1]);
+
+			sLog = "Variable" @ args[1] @ "on actor" @ args[0] @ "is equal to" @ sTemp $ ".";
+
+			return sTemp;
+		case "ANNOUNCE":
+		case "ANN":
+			if(args.Length < 1)
+			{
+				sLog = "Wrong amount of arguments for ANNOUNCE command!";
+
+				break;
+			}
+
+			switch(args.Length)
+			{
+				case 1:
+					U.Announce(args[0]);
+
+					break;
+				case 2:
+					U.Announce(args[0], float(args[1]));
+
+					break;
+			}
+
+			sLog = "Announcing the text:" @ args[0] @ ".";
+
+			break;
 		default:
-			sLog = "Unknown command:" @ command;
+			// We could end up here with array variable types, but it should be fine. Hmm...
+			sLog = "Unknown command:" @ command $ ".";
 
 			break;
 	}

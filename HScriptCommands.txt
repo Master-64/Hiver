@@ -1,0 +1,12 @@
+SETVARIABLE/SETVAR NAME VALUE -- Sets/registers the variable with NAME to equal VALUE.
+GETVARIABLE/GETVAR NAME -- Returns the value from the variable NAME.
+CONSOLECOMMAND/CC COMMAND -- Runs the console command COMMAND.
+GETHEROPAWN/GETHP -- Returns the current hero pawn, which will be the current player.
+GETINVENTORYCARRIERPAWN/GETICP -- Returns the current inventory carrier pawn, which will always be Shrek.
+SETACTOR PTR VARIABLE VALUE -- On actor PTR, sets the value of VARIABLE to VALUE.
+GETACTOR PTR VARIABLE -- On actor PTR, returns the value of VARIABLE.
+ANNOUNCE/ANN TEXT *DURATION -- Announces TEXT onto the center of the screen for DURATION seconds
+
+
+
+* Optional argument
