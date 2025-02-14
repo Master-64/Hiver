@@ -1,0 +1,53 @@
+[Info]
+; The name of the mod
+Name=Hiver (Modloader)
+; A short description of the mod
+Blurb=A modloader for Shrek 2
+; A full description of the mod on one line
+Description=A modloader for Shrek 2
+; The version of the mod
+Version=v1.0
+; The three-digit language code the mod was made for
+; Common examples:
+; * INT -- International (English)
+; * RUS -- Russian
+; * SPA -- Spanish
+; * FRE -- French
+; * POL -- Polish
+Langauge=INT
+; The author(s) of the mod
+; Authors can be separated with commas
+Authors=Master_64
+; The coauthor(s) of the mod
+; Coauthors can be separated with commas
+Coauthors=
+; Anybody who helped with the mod in any way
+; Others can be separated with commas
+Others=
+
+[ModLoader]
+; ModType can be the following:
+; * Core -- Any part of Hiver's internal workings -- Don't set this to Core unless you actually know what you're doing
+; * Mutator -- A mod built with UnrealScript
+; * Script -- A mod built with HiverScript
+; Types can be separated with commas
+ModType=Core
+; The exact name of the mod file to open
+ModFileName=Hiver
+; If ModType=Mutator, then pass the class name that should be instantiated on map load
+MutatorClassName=MutHiver
+
+[ModInstantiation]
+; If true, the mod will load on each map load. If false, it will only load when the game is initially loaded. Doesn't matter for mutators
+InstantiateOnMapLoad=true
+; If InstantiateOnMapLoad=false, if a map just loaded and is on this list, the mod will load
+; Maps can be separated with commas
+MapLoadWhiteList=
+; Optional launch options
+; Options can be separated with commas
+LaunchOptions=
+
+[ModScriptOptions]
+; This entire section is only relevant for script users
+; The priority of the script loading over other scripts. Higher values equal higher priority. The maximum value is 255
+ScriptLoadPriority=250
