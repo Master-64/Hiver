@@ -10,6 +10,16 @@
 // * Commands with return values
 // * Variable registers
 // * Command latency
+// 
+// Todo:
+// * Event subscriptions
+// * Simple conditionals
+// * Get actor by tag
+// * Goto
+// * Add a majority of the CutScript actions
+// * RandRange
+// * ScriptData saving
+// * Math expressions
 
 
 class HScript extends MInfo
@@ -18,12 +28,12 @@ class HScript extends MInfo
 
 struct ScriptDataStruct
 {
-	var config string Value, sName, sDataType;
+	var string Value, sName, sDataType;
 };
 
 var MutHiver Hiver;
 var array<string> Script, Actions;
-var config array<ScriptDataStruct> ScriptData;
+var array<ScriptDataStruct> ScriptData;
 var string sReturn, sLatentReturn, sLog, sLatentLog;
 var bool bDebug, bSleeping, bSlept;
 var int iCurrentLine, iCurrentAction, iActionTotal;
@@ -33,13 +43,14 @@ var int iCurrentLine, iCurrentAction, iActionTotal;
 function StartScript()
 {
     iCurrentLine = 0;
+
     GotoState('ScriptLogic');
 }
 
 // Pauses the script logic.
 function PauseScript()
 {
-    GotoState('');
+    GotoState('ScriptPause');
 }
 
 // Resets the script logic.
@@ -53,6 +64,8 @@ function EndScript()
 {
     PauseScript();
     ResetScript();
+
+    GotoState('ScriptEnd');
 }
 
 // Processes the current line in the script.
@@ -207,6 +220,7 @@ function string ProcessCommand(string command, array<string> args, out string sL
 	local int i;
 	local string sTemp;
 	local Actor aTemp;
+	local bool bTemp;
 
 	// Cap all command input strings
 	command = Caps(command);
@@ -343,6 +357,95 @@ function string ProcessCommand(string command, array<string> args, out string sL
 			sLog = "Announcing the text:" @ args[0] @ ".";
 
 			break;
+		case "SLEEP":
+		case "WAIT":
+		case "PAUSE":
+			if(args.Length < 1)
+			{
+				sLog = "Wrong amount of arguments for SLEEP command!";
+
+				break;
+			}
+
+			SetTimer(float(args[0]), false);
+
+			sLog = "Sleeping for" @ float(args[0]) @ " seconds.";
+
+			RegisterLatency(sLog, "");
+
+			break;
+		case "GOTOSTATE":
+			if(args.Length != 2)
+			{
+				sLog = "Wrong amount of arguments for GOTOSTATE command!";
+
+				break;
+			}
+
+			aTemp = Actor(FindObject(args[0], class'Actor'));
+
+			if(aTemp == none)
+			{
+				sLog = "GOTOSTATE cannot find actor" @ args[0] $ "!";
+
+				break;
+			}
+
+			sTemp = string(aTemp.GetStateName());
+
+			aTemp.GotoState(U.SName(args[1]));
+
+			sLog = "State" @ sTemp @ "on actor" @ args[0] @ "is now equal to" @ args[1] $ ".";
+
+			break;
+		case "ISINSTATE":
+		case "IFINSTATE":
+			if(args.Length != 2)
+			{
+				sLog = "Wrong amount of arguments for ISINSTATE command!";
+
+				break;
+			}
+
+			aTemp = Actor(FindObject(args[0], class'Actor'));
+
+			if(aTemp == none)
+			{
+				sLog = "ISINSTATE cannot find actor" @ args[0] $ "!";
+
+				break;
+			}
+
+			bTemp = aTemp.IsInState(U.SName(args[1]));
+
+			sLog = "State on actor" @ args[0] @ "is equal to" @ args[1] $ ":" @ U.BoolToString(bTemp) $ ".";
+
+			return U.BoolToString(bTemp);
+		case "LOG":
+			if(args.Length < 1)
+			{
+				sLog = "Wrong amount of arguments for LOG command!";
+
+				break;
+			}
+
+			for(i = 0; i < args.Length; i++)
+			{
+				if(sTemp == "")
+				{
+					sTemp = args[i];
+				}
+				else
+				{
+					sTemp = sTemp @ args[i];
+				}
+			}
+
+			Log(sTemp);
+
+			sLog = "Logging...";
+
+			break;
 		default:
 			// We could end up here with array variable types, but it should be fine. Hmm...
 			sLog = "Unknown command:" @ command $ ".";
@@ -356,6 +459,15 @@ function string ProcessCommand(string command, array<string> args, out string sL
 	}
 
 	return "";
+}
+
+// Only use in conjunction with latency
+event Timer()
+{
+	if(bSleeping)
+	{
+		bSleeping = false;
+	}
 }
 
 // Registers a latent moment in the script to begin
@@ -497,6 +609,9 @@ function ProcessReturnValue()
 }
 
 
+auto state ScriptLimbo
+{}
+
 state ScriptLogic
 {
     Begin:
@@ -541,8 +656,11 @@ state ScriptLogic
 	    iCurrentLine++;
     }
 
-    GotoState('ScriptEnd');
+    EndScript();
 }
+
+state ScriptPause
+{}
 
 state ScriptEnd
 {}

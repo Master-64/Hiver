@@ -5,7 +5,11 @@ GETHEROPAWN/GETHP -- Returns the current hero pawn, which will be the current pl
 GETINVENTORYCARRIERPAWN/GETICP -- Returns the current inventory carrier pawn, which will always be Shrek.
 SETACTOR PTR VARIABLE VALUE -- On actor PTR, sets the value of VARIABLE to VALUE.
 GETACTOR PTR VARIABLE -- On actor PTR, returns the value of VARIABLE.
-ANNOUNCE/ANN TEXT *DURATION -- Announces TEXT onto the center of the screen for DURATION seconds
+ANNOUNCE/ANN TEXT *DURATION -- Announces TEXT onto the center of the screen for DURATION seconds.
+SLEEP/WAIT/PAUSE VALUE -- Halts the script logic for VALUE seconds.
+GOTOSTATE PTR STATE -- On actor PTR, sets the state to STATE.
+ISINSTATE/IFINSTATE PTR STATE -- On actor PTR, returns true if the state of the actor is equal to STATE.
+LOG TEXT -- Logs TEXT, supports multiple arguments for automatic spaces.
 
 
 

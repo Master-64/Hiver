@@ -30,15 +30,15 @@ event PostLoadGame(bool bLoadFromSaveGame)
 
 event ServerTraveling(string URL, bool bItems)
 {
-	local int i;
+	// local int i;
 
 	ModLoader.SaveConfig();
 	ModLog.SaveConfig();
 
-	for(i = 0; i < ScriptMods.Length; i++)
-	{
-		ScriptMods[i].SaveConfig();
-	}
+	// for(i = 0; i < ScriptMods.Length; i++)
+	// {
+	// 	ScriptMods[i].SaveConfig();
+	// }
 
     if(NextMutator != none)
     {
