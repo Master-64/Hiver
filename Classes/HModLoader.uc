@@ -56,7 +56,7 @@ function ChainloadMods()
 	ModInfos.Remove(0, ModInfos.Length);
 
 	// Get all mod infos
-	for(i = 0; i < 1000; i++)
+	for(i = 0; i < 100000; i++)
 	{
 		// This will return true when all mods have been iterated through
 		if(InStr(Localize("Info", "Name", "..\\Mods\\Mod" $ string(i) $ "\\Mod"), "Mod.Info.Name") != -1)
@@ -114,7 +114,7 @@ function ChainloadMods()
 
 	if(ModInfos.Length == 0)
 	{
-		class'HVersion'.static.DebugLog("No mods and no mod loader found! Hiver's installation appears to be corrupt. Quitting...");
+		class'HVersion'.static.DebugLog("No mods and no modloader found! Hiver's installation appears to be corrupt. Quitting...");
 
 		U.CC("Quit");
 

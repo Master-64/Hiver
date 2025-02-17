@@ -10,16 +10,17 @@
 // * Commands with return values
 // * Variable registers
 // * Command latency
+// * Goto & labels
+// * Script ending
 // 
 // Todo:
-// * Event subscriptions
-// * Simple conditionals
 // * Get actor by tag
-// * Goto
-// * Add a majority of the CutScript actions
 // * RandRange
+// * Simple conditionals
+// * Event subscriptions
 // * ScriptData saving
 // * Math expressions
+// * Add a majority of the CutScript actions
 
 
 class HScript extends MInfo
@@ -31,20 +32,39 @@ struct ScriptDataStruct
 	var string Value, sName, sDataType;
 };
 
+struct GotoStruct
+{
+	var string sLabel;
+	var int iLine;
+};
+
 var MutHiver Hiver;
 var array<string> Script, Actions;
 var array<ScriptDataStruct> ScriptData;
+var array<GotoStruct> Gotos;
 var string sReturn, sLatentReturn, sLog, sLatentLog;
-var bool bDebug, bSleeping, bSlept;
-var int iCurrentLine, iCurrentAction, iActionTotal;
+var bool bDebug, bSleeping, bSlept, bGoto, bEnd;
+var int iCurrentLine, iCurrentAction, iActionTotal, iGotoLine;
 
+
+function Init()
+{
+	ProcessGotos();
+}
 
 // Starts the script logic.
-function StartScript()
+function StartScript(optional int iLine)
 {
-    iCurrentLine = 0;
+    iCurrentLine = iLine;
 
     GotoState('ScriptLogic');
+}
+
+// Prepares a goto for the provided line.
+function PrepGoto(int iLine)
+{
+	bGoto = true;
+	iGotoLine = iLine;
 }
 
 // Pauses the script logic.
@@ -54,9 +74,9 @@ function PauseScript()
 }
 
 // Resets the script logic.
-function ResetScript()
+function ResetScript(optional int iLine)
 {
-    iCurrentLine = 0;
+    iCurrentLine = iLine;
 }
 
 // Ends the script logic.
@@ -76,12 +96,72 @@ function string ProcessAction(string sAction, out string sLog)
 
     // Split the action into command and arguments
     args = U.Split(sAction);
+
+    if(args.Length < 1)
+    {
+    	class'HVersion'.static.DebugLog("Line/action not formatted correctly!");
+
+    	return "";
+    }
+
     command = args[0];
     args.Remove(0, 1);
 
     ParseQuotes(args, sAction);
 
     return ProcessCommand(command, args, sLog);
+}
+
+// Calculates all goto pointers.
+function ProcessGotos()
+{
+	local int i;
+	local string command;
+	local array<string> args;
+
+	Gotos.Remove(0, Gotos.Length);
+
+	// Determine where all the labels
+	// are at, then save their locations.
+	for(i = 0; i < Script.Length; i++)
+	{
+		args.Remove(0, args.Length);
+		args = U.Split(Script[i]);
+		command = args[0];
+		args.Remove(0, 1);
+
+		if(Caps(command) == "LABEL")
+		{
+			if(args.Length != 1)
+			{
+				class'HVersion'.static.DebugLog("GOTO command on line" @ string(i) @ "not formatted correctly!");
+
+				continue;
+			}
+
+			Gotos.Insert(Gotos.Length, 1);
+			Gotos[Gotos.Length - 1].sLabel = Caps(args[0]);
+			Gotos[Gotos.Length - 1].iLine = i;
+		}
+	}
+}
+
+// Returns the index within the script
+// that points to the goto line linked
+// with the label specified.
+function int GetGotoLineByLabel(string sLabel)
+{
+	local int i;
+
+	for(i = 0; i < Gotos.Length; i++)
+	{
+		if(Gotos[i].sLabel == Caps(sLabel))
+		{
+			return Gotos[i].iLine;
+		}
+	}
+
+	return -1;
 }
 
 // Takes a batch of arguments, then determines
@@ -217,7 +297,7 @@ function bool ParseActions(string sLine)
 // Returns a string if the command does so.
 function string ProcessCommand(string command, array<string> args, out string sLog)
 {
-	local int i;
+	local int i, iTemp;
 	local string sTemp;
 	local Actor aTemp;
 	local bool bTemp;
@@ -446,6 +526,39 @@ function string ProcessCommand(string command, array<string> args, out string sL
 			sLog = "Logging...";
 
 			break;
+		case "GOTO":
+		case "GOTOLABEL":
+			if(args.Length != 1)
+			{
+				sLog = "Wrong amount of arguments for GOTO command!";
+
+				break;
+			}
+
+			iTemp = GetGotoLineByLabel(args[0]);
+
+			if(iTemp == -1)
+			{
+				sLog = "GOTO command failed to find label" @ args[0] $ "!";
+
+				break;
+			}
+
+			PrepGoto(iTemp);
+
+			sLog = "Going to label:" @ args[0] @ "on line" @ string(iTemp) $ ".";
+
+			break;
+		case "LABEL":
+			break;
+		case "END":
+		case "STOP":
+		case "BREAK":
+			bEnd = true;
+
+			sLog = "Ending script.";
+
+			break;
 		default:
 			// We could end up here with array variable types, but it should be fine. Hmm...
 			sLog = "Unknown command:" @ command $ ".";
@@ -455,7 +568,7 @@ function string ProcessCommand(string command, array<string> args, out string sL
 
 	if(sLog == "")
 	{
-		sLog = "Finished line" @ string(iCurrentLine) @ "with no return value";
+		sLog = "Finished an action in line" @ string(iCurrentLine) @ "with no return value.";
 	}
 
 	return "";
@@ -651,6 +764,24 @@ state ScriptLogic
 		    }
 
 		    iCurrentAction++;
+
+		    // Handle goto logic if applicable.
+		    if(bGoto)
+		    {
+		    	bGoto = false;
+
+		    	Actions.Remove(0, Actions.Length);
+		    	
+		    	iCurrentAction = iGotoLine;
+		    }
+
+		    // Handle end logic if applicable.
+		    if(bEnd)
+		    {
+		    	bEnd = false;
+
+		    	EndScript();
+		    }
 	    }
 
 	    iCurrentLine++;

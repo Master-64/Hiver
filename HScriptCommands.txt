@@ -10,6 +10,9 @@ SLEEP/WAIT/PAUSE VALUE -- Halts the script logic for VALUE seconds.
 GOTOSTATE PTR STATE -- On actor PTR, sets the state to STATE.
 ISINSTATE/IFINSTATE PTR STATE -- On actor PTR, returns true if the state of the actor is equal to STATE.
 LOG TEXT -- Logs TEXT, supports multiple arguments for automatic spaces.
+GOTO/GOTOLABEL LABEL -- Goes to LABEL, skipping any script lines in the process, and can go backward.
+LABEL LABEL -- Used to mark a label for the GOTO/GOTOLABEL command.
+END/STOP/BREAK -- Ends the script.
 
 
 

@@ -57,8 +57,10 @@ function RegisterScriptMods()
 	for(i = 0; i < class'HModLoader'.default.ModInfos.Length; i++)
 	{
 		ScriptMods.Insert(ScriptMods.Length, 1);
+		// Todo: support event subscriptions here
 		ScriptMods[ScriptMods.Length - 1] = Spawn(class'HScript');
 		ScriptMods[ScriptMods.Length - 1].Hiver = self;
+		ScriptMods[ScriptMods.Length - 1].Init();
 
 		if(class'HModLoader'.default.ModInfos[i].ModType != "Script")
 		{
