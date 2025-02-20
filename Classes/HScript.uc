@@ -1,6 +1,6 @@
 // *****************************************************
-// *				 Hiver by Master_64				   *
-// *		  Copyrighted (c) Master_64, 2024		   *
+// *				 Hiver by Master_64					*
+// *		  Copyrighted (c) Master_64, 2024			*
 // *   May be modified but not without proper credit!  *
 // *****************************************************
 // 
@@ -12,10 +12,10 @@
 // * Command latency
 // * Goto & labels
 // * Script ending
+// * Random number generation
+// * Get actor by tag
 // 
 // Todo:
-// * Get actor by tag
-// * RandRange
 // * Simple conditionals
 // * Event subscriptions
 // * ScriptData saving
@@ -55,9 +55,9 @@ function Init()
 // Starts the script logic.
 function StartScript(optional int iLine)
 {
-    iCurrentLine = iLine;
+	iCurrentLine = iLine;
 
-    GotoState('ScriptLogic');
+	GotoState('ScriptLogic');
 }
 
 // Prepares a goto for the provided line.
@@ -70,46 +70,46 @@ function PrepGoto(int iLine)
 // Pauses the script logic.
 function PauseScript()
 {
-    GotoState('ScriptPause');
+	GotoState('ScriptPause');
 }
 
 // Resets the script logic.
 function ResetScript(optional int iLine)
 {
-    iCurrentLine = iLine;
+	iCurrentLine = iLine;
 }
 
 // Ends the script logic.
 function EndScript()
 {
-    PauseScript();
-    ResetScript();
+	PauseScript();
+	ResetScript();
 
-    GotoState('ScriptEnd');
+	GotoState('ScriptEnd');
 }
 
 // Processes the current line in the script.
 function string ProcessAction(string sAction, out string sLog)
 {
-    local string command;
-    local array<string> args;
+	local string command;
+	local array<string> args;
 
-    // Split the action into command and arguments
-    args = U.Split(sAction);
+	// Split the action into command and arguments
+	args = U.Split(sAction);
 
-    if(args.Length < 1)
-    {
-    	class'HVersion'.static.DebugLog("Line/action not formatted correctly!");
+	if(args.Length < 1)
+	{
+		class'HVersion'.static.DebugLog("Line/action not formatted correctly!");
 
-    	return "";
-    }
+		return "";
+	}
 
-    command = args[0];
-    args.Remove(0, 1);
+	command = args[0];
+	args.Remove(0, 1);
 
-    ParseQuotes(args, sAction);
+	ParseQuotes(args, sAction);
 
-    return ProcessCommand(command, args, sLog);
+	return ProcessCommand(command, args, sLog);
 }
 
 // Calculates all goto pointers.
@@ -171,68 +171,68 @@ function int GetGotoLineByLabel(string sLabel)
 // Todo: make sure the quotes are removed
 function ParseQuotes(out array<string> args, string sLine)
 {
-    local string currentArg;
-    local array<string> newArgs;
-    local int i, iStartQuoteIndex, iEndQuoteIndex, iSpaceIndex;
+	local string currentArg;
+	local array<string> newArgs;
+	local int i, iStartQuoteIndex, iEndQuoteIndex, iSpaceIndex;
 
-    for(i = 0; i < Len(sLine); i++)
-    {
-        // Check for the start of a quote
-        if(InStr(Left(sLine, Len(sLine) - i + 1), chr(34)) != -1)
-        {
-            iStartQuoteIndex = i; // Found the start of a quote
+	for(i = 0; i < Len(sLine); i++)
+	{
+		// Check for the start of a quote
+		if(InStr(Left(sLine, Len(sLine) - i + 1), chr(34)) != -1)
+		{
+			iStartQuoteIndex = i; // Found the start of a quote
 
-            // Move to find the end quote
-            iEndQuoteIndex = InStr(Right(sLine, Len(sLine) - iStartQuoteIndex + 1), chr(34));
+			// Move to find the end quote
+			iEndQuoteIndex = InStr(Right(sLine, Len(sLine) - iStartQuoteIndex + 1), chr(34));
 
-            if(iEndQuoteIndex != -1) // Ensure it's a full quote
-            {
-                iEndQuoteIndex += iStartQuoteIndex - 1; // Adjust index to original string
+			if(iEndQuoteIndex != -1) // Ensure it's a full quote
+			{
+				iEndQuoteIndex += iStartQuoteIndex - 1; // Adjust index to original string
 
-                // Extract the quoted string
-                currentArg = Mid(sLine, iStartQuoteIndex, iEndQuoteIndex - iStartQuoteIndex + 1);
-                
-                // Add the quoted string to newArgs
-                newArgs.Insert(newArgs.Length, 1);
-                newArgs[newArgs.Length - 1] = currentArg;
+				// Extract the quoted string
+				currentArg = Mid(sLine, iStartQuoteIndex, iEndQuoteIndex - iStartQuoteIndex + 1);
+				
+				// Add the quoted string to newArgs
+				newArgs.Insert(newArgs.Length, 1);
+				newArgs[newArgs.Length - 1] = currentArg;
 
-                // Move the index past the end quote
-                i = iEndQuoteIndex + 1;
-            }
-            else
-            {
-            	// No valid end quote found, continue to next character
-                continue;
-            }
-        }
-        else
-        {
-            // Handle non-quoted arguments
-            iSpaceIndex = InStr(Left(sLine, Len(sLine) - i + 1), " ");
+				// Move the index past the end quote
+				i = iEndQuoteIndex + 1;
+			}
+			else
+			{
+				// No valid end quote found, continue to next character
+				continue;
+			}
+		}
+		else
+		{
+			// Handle non-quoted arguments
+			iSpaceIndex = InStr(Left(sLine, Len(sLine) - i + 1), " ");
 
-            if(iSpaceIndex != -1) // Found a space
-            {
-                // Extract the argument
-                currentArg = Mid(sLine, i, iSpaceIndex - 1);
-                newArgs.Insert(newArgs.Length, 1);
-                newArgs[newArgs.Length - 1] = currentArg;
+			if(iSpaceIndex != -1) // Found a space
+			{
+				// Extract the argument
+				currentArg = Mid(sLine, i, iSpaceIndex - 1);
+				newArgs.Insert(newArgs.Length, 1);
+				newArgs[newArgs.Length - 1] = currentArg;
 
-                // Move past the space
-                i += iSpaceIndex;
-            }
-            else
-            {
-                // If no more spaces, take the rest of the string
-                currentArg = Mid(sLine, i);
-                newArgs.Insert(newArgs.Length, 1);
-                newArgs[newArgs.Length - 1] = currentArg;
+				// Move past the space
+				i += iSpaceIndex;
+			}
+			else
+			{
+				// If no more spaces, take the rest of the string
+				currentArg = Mid(sLine, i);
+				newArgs.Insert(newArgs.Length, 1);
+				newArgs[newArgs.Length - 1] = currentArg;
 
-                break;
-            }
-        }
-    }
+				break;
+			}
+		}
+	}
 
-    args = newArgs;
+	args = newArgs;
 }
 
 // Takes a full line, parses it as action(s)
@@ -240,56 +240,56 @@ function ParseQuotes(out array<string> args, string sLine)
 // them all up next in the action list.
 function bool ParseActions(string sLine)
 {
-    local int i, j, iStartIndex, iEndIndex, iNestCount, iTotalNestCount;
+	local int i, j, iStartIndex, iEndIndex, iNestCount, iTotalNestCount;
 
-    iCurrentAction = 0;
+	iCurrentAction = 0;
 
-    // Get the total amount of nests
-    for(i = 0; i < Len(sLine); i++)
-    {
-        if(Mid(sLine, i, 1) == "(")
-        {
-        	iTotalNestCount++;
-        }
-    }
+	// Get the total amount of nests
+	for(i = 0; i < Len(sLine); i++)
+	{
+		if(Mid(sLine, i, 1) == "(")
+		{
+			iTotalNestCount++;
+		}
+	}
 
-    // Get each nested action, and parse
-    for(i = iTotalNestCount; i >= 0; i--)
-    {
-    	iNestCount = 0;
+	// Get each nested action, and parse
+	for(i = iTotalNestCount; i >= 0; i--)
+	{
+		iNestCount = 0;
 
-	    for(j = 0; j < Len(sLine); j++)
-	    {
-	        switch(Mid(sLine, j, 1))
-	        {
-	            case "(":
-	                if(iNestCount == i)
-	                {
-	                    iStartIndex = j; // Mark the start of the outermost parentheses
-	                }
+		for(j = 0; j < Len(sLine); j++)
+		{
+			switch(Mid(sLine, j, 1))
+			{
+				case "(":
+					if(iNestCount == i)
+					{
+						iStartIndex = j; // Mark the start of the outermost parentheses
+					}
 
-	                iNestCount++; // Increment for each '(' found
+					iNestCount++; // Increment for each '(' found
 
-	                break;
-	            case ")":
-	                iNestCount--; // Decrement for each ')' found
+					break;
+				case ")":
+					iNestCount--; // Decrement for each ')' found
 
-	                if(iNestCount == i)
-	                {
-	                    iEndIndex = j; // Mark the end of the outermost parentheses
+					if(iNestCount == i)
+					{
+						iEndIndex = j; // Mark the end of the outermost parentheses
 
-	                    Actions.Insert(Actions.Length, 1);
-	                    Actions[Actions.Length - 1] = Mid(sLine, iStartIndex + 1, iEndIndex - iStartIndex - 1);
-	                }
+						Actions.Insert(Actions.Length, 1);
+						Actions[Actions.Length - 1] = Mid(sLine, iStartIndex + 1, iEndIndex - iStartIndex - 1);
+					}
 
-	                break;
-	        }
-	    }
+					break;
+			}
+		}
 	}
 
 	iActionTotal = Max(Actions.Length, 1);
-    
-    return iNestCount != 0;
+	
+	return iNestCount != 0;
 }
 
 // Takes a command with arguments and
@@ -559,6 +559,53 @@ function string ProcessCommand(string command, array<string> args, out string sL
 			sLog = "Ending script.";
 
 			break;
+		case "RANDOMNUMBER":
+		case "RANDNUM":
+			if(args.Length != 2)
+			{
+				sLog = "Wrong amount of arguments for RANDOMNUMBER command!";
+
+				break;
+			}
+
+			sLog = "Returning random number between" @ args[0] @ "and" @ args[1] $ ".";
+
+			return string(U.RandRangeInt(int(args[0]), int(args[1])));
+		case "RANDOMFLOAT":
+		case "RANDFLOAT":
+			if(args.Length != 2)
+			{
+				sLog = "Wrong amount of arguments for RANDOMFLOAT command!";
+
+				break;
+			}
+
+			sLog = "Returning random float between" @ args[0] @ "and" @ args[1] $ ".";
+
+			return string(U.RandRangeFloat(float(args[0]), float(args[1])));
+		case "LOCATEACTOR":
+			if(args.Length != 1)
+			{
+				sLog = "Wrong amount of arguments for LOCATEACTOR command!";
+
+				break;
+			}
+			
+			foreach AllActors(class'Actor', aTemp, U.SName(args[0]))
+			{
+				break;
+			}
+			
+			if(aTemp == none)
+			{
+				sLog = "Failed to find actor with tag '" @ args[0] $ "'.";
+				
+				break;
+			}
+
+			sLog = "Returning actor pointer" @ string(aTemp) @ "with tag '" @ args[0] $ "'.";
+			
+			return string(aTemp);
 		default:
 			// We could end up here with array variable types, but it should be fine. Hmm...
 			sLog = "Unknown command:" @ command $ ".";
@@ -604,58 +651,58 @@ function UnregisterLatency()
 // Registers a new variable with a name and value
 function int RegisterVariable(string PropName, string PropValue)
 {
-    local int iIndex;
+	local int iIndex;
 
-    // Find the index of the variable with the same name
-    iIndex = GetVariableIndexByName(PropName);
+	// Find the index of the variable with the same name
+	iIndex = GetVariableIndexByName(PropName);
 
-    // If the variable isn't found, find the first available slot
-    if(iIndex == -1)
-    {
-        default.ScriptData.Insert(default.ScriptData.Length, 1);
+	// If the variable isn't found, find the first available slot
+	if(iIndex == -1)
+	{
+		default.ScriptData.Insert(default.ScriptData.Length, 1);
 
-        iIndex = default.ScriptData.Length - 1;
-    }
-    else
-    {
-    	// Variable already declared, move on...
-    	return iIndex;
-    }
+		iIndex = default.ScriptData.Length - 1;
+	}
+	else
+	{
+		// Variable already declared, move on...
+		return iIndex;
+	}
 
-    // Remember the data
-    default.ScriptData[iIndex].sName = PropName;
-    default.ScriptData[iIndex].sDataType = U.GuessArrayTypeFromString(PropValue);
-    default.ScriptData[iIndex].Value = PropValue;
+	// Remember the data
+	default.ScriptData[iIndex].sName = PropName;
+	default.ScriptData[iIndex].sDataType = U.GuessArrayTypeFromString(PropValue);
+	default.ScriptData[iIndex].Value = PropValue;
 
-    return iIndex;
+	return iIndex;
 }
 
 // Sets an existing variable's value by a slot
 function SetVariableBySlot(int PropSlot, string PropValue)
 {
-    // Validate the slot and set the value
-    if(!IsVariableSlotAvailable(PropSlot))
-    {
-        default.ScriptData[PropSlot].Value = PropValue;
-    }
-    else
-    {
-        class'HVersion'.static.DebugLog("Variable slot not allocated!");
-    }
+	// Validate the slot and set the value
+	if(!IsVariableSlotAvailable(PropSlot))
+	{
+		default.ScriptData[PropSlot].Value = PropValue;
+	}
+	else
+	{
+		class'HVersion'.static.DebugLog("Variable slot not allocated!");
+	}
 }
 
 // Gets an existing variable's value by a slot
 function string GetVariableBySlot(int PropSlot)
 {
-    // Validate the slot and return the value
-    if(!IsVariableSlotAvailable(PropSlot))
-    {
-        return default.ScriptData[PropSlot].Value;
-    }
-    else
-    {
-        return "";
-    }
+	// Validate the slot and return the value
+	if(!IsVariableSlotAvailable(PropSlot))
+	{
+		return default.ScriptData[PropSlot].Value;
+	}
+	else
+	{
+		return "";
+	}
 }
 
 // Gets an existing variable's index by a name
@@ -712,13 +759,13 @@ function ProcessReturnValue()
 {
 	local int i;
 
-    for(i = iCurrentAction + 1; i < Actions.Length; i++)
-    {
-        if(i + 1 < Actions.Length)
-        {
-        	ReplaceText(Actions[i + 1], "(" $ Actions[iCurrentAction] $ ")", sReturn);
-        }
-    }
+	for(i = iCurrentAction + 1; i < Actions.Length; i++)
+	{
+		if(i + 1 < Actions.Length)
+		{
+			ReplaceText(Actions[i + 1], "(" $ Actions[iCurrentAction] $ ")", sReturn);
+		}
+	}
 }
 
 
@@ -727,67 +774,67 @@ auto state ScriptLimbo
 
 state ScriptLogic
 {
-    Begin:
+	Begin:
 
-    while(iCurrentLine < Script.Length)
-    {
-	    ParseActions(Script[iCurrentLine]);
+	while(iCurrentLine < Script.Length)
+	{
+		ParseActions(Script[iCurrentLine]);
 
-	    while(iCurrentAction < Actions.Length)
-	    {
-	    	sReturn = ProcessAction(Actions[iCurrentAction], sLog);
+		while(iCurrentAction < Actions.Length)
+		{
+			sReturn = ProcessAction(Actions[iCurrentAction], sLog);
 
-	    	// If command is latent, wait for it's true return value
-	    	while(bSleeping)
-	    	{
-	    		Sleep(0.000001);
-	    	}
+			// If command is latent, wait for it's true return value
+			while(bSleeping)
+			{
+				Sleep(0.000001);
+			}
 
-	    	// If we got done sleeping, give us the return value
-	    	if(bSlept)
-	    	{
-	    		UnregisterLatency();
-	    	}
+			// If we got done sleeping, give us the return value
+			if(bSlept)
+			{
+				UnregisterLatency();
+			}
 
-		    // DEBUG
-		    if(bDebug)
-		    {
-		        class'HVersion'.static.DebugLog("HiverScriptLog [" $ string(iCurrentLine) $ "](" $ string(iCurrentAction) $ "/" $ string(iActionTotal) $ "):" @ sLog);
-		    }
+			// DEBUG
+			if(bDebug)
+			{
+				class'HVersion'.static.DebugLog("HiverScriptLog [" $ string(iCurrentLine) $ "](" $ string(iCurrentAction) $ "/" $ string(iActionTotal) $ "):" @ sLog);
+			}
 
-		    if(sReturn != "")
-		    {
-		        // Handle return value
-		        // ...
+			if(sReturn != "")
+			{
+				// Handle return value
+				// ...
 
-		        ProcessReturnValue();
-		    }
+				ProcessReturnValue();
+			}
 
-		    iCurrentAction++;
+			iCurrentAction++;
 
-		    // Handle goto logic if applicable.
-		    if(bGoto)
-		    {
-		    	bGoto = false;
+			// Handle goto logic if applicable.
+			if(bGoto)
+			{
+				bGoto = false;
 
-		    	Actions.Remove(0, Actions.Length);
-		    	
-		    	iCurrentAction = iGotoLine;
-		    }
+				Actions.Remove(0, Actions.Length);
+				
+				iCurrentAction = iGotoLine;
+			}
 
-		    // Handle end logic if applicable.
-		    if(bEnd)
-		    {
-		    	bEnd = false;
+			// Handle end logic if applicable.
+			if(bEnd)
+			{
+				bEnd = false;
 
-		    	EndScript();
-		    }
-	    }
+				EndScript();
+			}
+		}
 
-	    iCurrentLine++;
-    }
+		iCurrentLine++;
+	}
 
-    EndScript();
+	EndScript();
 }
 
 state ScriptPause
