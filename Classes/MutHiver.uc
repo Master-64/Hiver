@@ -23,8 +23,7 @@ event PostLoadGame(bool bLoadFromSaveGame)
 
 		GotoState('AwaitModLoader');
 
-		// Process core mutator logic
-		// ...
+		// Process core mutator logic.
 	}
 }
 
@@ -48,28 +47,37 @@ event ServerTraveling(string URL, bool bItems)
 
 function RegisterScriptMods()
 {
-	// Code to load and register all script mods goes here
+	// Code to load and register all script mods goes here.
 	local int i;
+	local array<string> ScriptFile;
 
 	class'HVersion'.static.DebugLog("Beginning to register all script mods...");
 
-	// Get all mod infos
+	// Get all mod infos.
 	for(i = 0; i < class'HModLoader'.default.ModInfos.Length; i++)
 	{
 		ScriptMods.Insert(ScriptMods.Length, 1);
-		// Todo: support event subscriptions here
+		// Todo: support event subscriptions here.
 		ScriptMods[ScriptMods.Length - 1] = Spawn(class'HScript');
 		ScriptMods[ScriptMods.Length - 1].Hiver = self;
-		ScriptMods[ScriptMods.Length - 1].Init();
 
 		if(class'HModLoader'.default.ModInfos[i].ModType != "Script")
 		{
 			continue;
 		}
+		
+		// Process script mods.
 
-		U.LoadStringArray(ScriptMods[ScriptMods.Length - 1].Script, "..\\Mods\\Mod\\" $ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
-
-		ScriptMods[ScriptMods.Length - 1].StartScript();
+		U.LoadStringArray(ScriptFile, "..\\Mods\\Mod" $ string(i) $ "\\" $ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
+		
+		if(ScriptFile.Length == 0)
+		{
+			class'HVersion'.static.DebugLog("Did not find script file" @ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
+			
+			continue;
+		}
+		
+		ScriptMods[ScriptMods.Length - 1].Init(ScriptFile);
 
 		class'HVersion'.static.DebugLog(class'HModLoader'.default.ModInfos[i].Name @ class'HModLoader'.default.ModInfos[i].Version @ "script loaded...");
 	}
