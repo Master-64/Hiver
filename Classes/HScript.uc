@@ -42,7 +42,7 @@ var MutHiver Hiver;
 var array<HScriptProcessor> Threads;
 var array<string> ThreadEvents;
 var array<ScriptDataStruct> ScriptData;
-var bool bDebug, bEventTick, bHasTicked, bWasInCutscene;
+var bool bDebug, bEventTick, bHasTicked, bWasInCutscene, bAwaitingAttack, bAwaitingSpotting;
 var float fOldfLastLandedTime;
 
 
@@ -103,10 +103,11 @@ event Tick(float DeltaTime)
 	{
 		// First tick logic.
 		
+		bHasTicked = true;
+		
 		QueueThreadEvent("OnMapLoaded");
 	}
 	
-	bHasTicked = true;
 	bInCutscene = U.GetPC().bInCutScene();
 	
 	if(bInCutscene && !bWasInCutscene)
@@ -118,6 +119,8 @@ event Tick(float DeltaTime)
 		QueueThreadEvent("OnCinematicCutsceneEnd");
 	}
 	
+	bWasInCutscene = bInCutscene;
+	
 	fLastLandedTime = KWPawn(U.GetHP()).fLastLandedTime;
 	
 	if(fOldfLastLandedTime < fLastLandedTime)
@@ -127,7 +130,57 @@ event Tick(float DeltaTime)
 	
 	fOldfLastLandedTime = fLastLandedTime;
 	
-	bWasInCutscene = bInCutscene;
+	if(U.GetPC().bPressedJump)
+	{
+		QueueThreadEvent("OnPlayerJump");
+	}
+	
+	if(U.PlayerIsAttacking(U.GetHP()) && bAwaitingAttack)
+	{
+		bAwaitingAttack = false;
+		
+		switch(U.GetHP().GetStateName())
+		{
+			case 'stateStartAttack':
+			case 'stateAttack1':
+			case 'stateAttack1End':
+			case 'stateAttack2':
+			case 'stateAttack2End':
+			case 'stateAttack3':
+			case 'stateAttack3Attack1':
+			case 'stateSpecialAttack':
+			case 'stateBossPibAttack':
+				QueueThreadEvent("OnPlayerAttack");
+				
+				break;
+			case 'stateRunAttack':
+				QueueThreadEvent("OnPlayerChargeAttack");
+				
+				break;
+			case 'stateStartAirAttack':
+			case 'stateContinueAirAttack':
+				QueueThreadEvent("OnPlayerJumpAttack");
+				
+				break;
+			default:
+				break;
+		}
+	}
+	else if(!U.PlayerIsAttacking(U.GetHP()) && !bAwaitingAttack)
+	{
+		bAwaitingAttack = true;
+	}
+	
+	if(SHHeroPawn(U.GetHP()).numCombatants > 0 && bAwaitingSpotting)
+	{
+		bAwaitingSpotting = false;
+		
+		QueueThreadEvent("OnPlayerSpottedByEnemy");
+	}
+	else if(SHHeroPawn(U.GetHP()).numCombatants <= 0 && !bAwaitingSpotting)
+	{
+		bAwaitingSpotting = true;
+	}
 }
 
 event PostLoadGame(bool bLoadFromSaveGame)
@@ -886,4 +939,6 @@ defaultproperties
 {
 	bAlwaysTick=true
 	bDebug=true
+	bAwaitingAttack=true
+	bAwaitingSpotting=true
 }

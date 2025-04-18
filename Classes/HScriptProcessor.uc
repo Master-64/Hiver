@@ -132,19 +132,19 @@ state ScriptLogic
 		{
 			sReturn = ProcessAction(Actions[iCurrentAction], sLog);
 			
-			// If command is latent, wait for it's true return value
+			// If command is latent, wait for it's true return value.
 			while(bSleeping)
 			{
 				Sleep(0.000001);
 			}
 			
-			// If we got done sleeping, give us the return value
+			// If we got done sleeping, give us the return value.
 			if(bSlept)
 			{
 				UnregisterLatency();
 			}
 			
-			// DEBUG
+			// DEBUG!
 			if(bDebug)
 			{
 				class'HVersion'.static.DebugLog("HiverScriptLog [" $ string(iCurrentLine) $ "](" $ string(iCurrentAction) $ "/" $ string(iActionTotal) $ "):" @ sLog);
@@ -152,7 +152,7 @@ state ScriptLogic
 			
 			if(sReturn != "")
 			{
-				// Handle return value
+				// Handle return value.
 				// ...
 				
 				ProcessReturnValue();
