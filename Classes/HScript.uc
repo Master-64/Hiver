@@ -15,11 +15,11 @@
 // * Random number generation
 // * Get actor by tag
 // * Event subscriptions
+// * Math expressions
 // 
 // Todo:
 // * Simple conditionals
 // * ScriptData saving
-// * Math expressions
 // * Add a majority of the CutScript actions
 
 
@@ -135,7 +135,7 @@ event Tick(float DeltaTime)
 		QueueThreadEvent("OnPlayerJump");
 	}
 	
-	if(U.PlayerIsAttacking(U.GetHP()) && bAwaitingAttack)
+	if(U.PlayerIsAttacking(SHHeroPawn(U.GetHP())) && bAwaitingAttack)
 	{
 		bAwaitingAttack = false;
 		
@@ -166,7 +166,7 @@ event Tick(float DeltaTime)
 				break;
 		}
 	}
-	else if(!U.PlayerIsAttacking(U.GetHP()) && !bAwaitingAttack)
+	else if(!U.PlayerIsAttacking(SHHeroPawn(U.GetHP())) && !bAwaitingAttack)
 	{
 		bAwaitingAttack = true;
 	}
@@ -755,6 +755,27 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 			sLog = "Returning actor pointer" @ string(aTemp) @ "with tag '" @ args[0] $ "'.";
 			
 			return string(aTemp);
+		case "EVALUATEEXPRESSION":
+		case "EVAL":
+			if(args.Length != 1)
+			{
+				sLog = "Wrong amount of arguments for EVALUATEEXPRESSION command!";
+				
+				break;
+			}
+			
+			sTemp = U.Eval(args[0]);
+			
+			if(sTemp == "")
+			{
+				sLog = "EVALUATEEXPRESSION command returned none!";
+				
+				break;
+			}
+			
+			sLog = "Returning value" @ sTemp $ ".";
+			
+			return sTemp;
 		default:
 			// We could end up here with array variable types, but it should be fine. Hmm...
 			sLog = "Unknown command:" @ command $ ".";

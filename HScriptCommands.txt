@@ -16,6 +16,7 @@ END/STOP/BREAK -- Ends the script.
 RANDOMNUMBER/RANDNUM -- Returns a random number between MIN and MAX.
 RANDOMFLOAT/RANDFLOAT -- Returns a random float (decimal value) between MIN and MAX.
 LOCATEACTOR TAG -- Returns an actor pointer from the first actor found with the tag TAG.
+EVALUATEEXPRESSION/EVAL EQUATION -- Processes EQUATION as an equation and returns the solution. Do not use spaces!
 
 
 
