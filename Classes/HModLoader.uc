@@ -48,15 +48,16 @@ event PostLoadGame(bool bLoadFromSaveGame)
 
 function ChainloadMods()
 {
-	local int i;
+	local array<string> TokenArray;
 	local string sMutators;
-
+	local int i, j;
+	
 	class'HVersion'.static.DebugLog("Beginning to chainload all mods...");
 
 	ModInfos.Remove(0, ModInfos.Length);
 
 	// Get all mod infos
-	for(i = 0; i < 100000; i++)
+	for(i = 0; i < 99999; i++)
 	{
 		// This will return true when all mods have been iterated through
 		if(InStr(Localize("Info", "Name", "..\\Mods\\Mod" $ string(i) $ "\\Mod"), "Mod.Info.Name") != -1)
@@ -88,10 +89,17 @@ function ChainloadMods()
 		switch(Caps(ModInfos[i].ModType))
 		{
 			case "CORE":
-				if(Caps(ModInfos[i].LaunchOptions) == "NOVID")
+				TokenArray = U.Split(Caps(ModInfos[i].LaunchOptions), ",");
+				
+				for(j = 0; j < TokenArray.Length; j++)
 				{
-					bSkipMovies = true;
+					if(TokenArray[i] == "NOVID")
+					{
+						bSkipMovies = true;
+					}
 				}
+				
+				break;
 			case "MUTATOR":
 				if(Len(sMutators) == 0)
 				{
