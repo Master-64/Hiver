@@ -17,10 +17,10 @@
 // * Event subscriptions
 // * Math expressions
 // 
-// Todo:
-// * Simple conditionals
-// * ScriptData saving
-// * Add a majority of the CutScript actions
+// Future Todo:
+// * ScriptData saving -- So much work for so little.
+// * Add a majority of the CutScript actions -- Again, a lot of work for something that may not be used.
+// * Simple conditionals -- Same as above, where I can't see this being used much.
 
 
 class HScript extends MInfo
