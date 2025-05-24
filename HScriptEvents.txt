@@ -1,0 +1,11 @@
+OnMapLoaded -- Fired to when the map first loads.
+OnSaveGame -- Fired to when a save is finished.
+OnLoadGame -- Fired to when a load is finished.
+OnTick -- Fired to every tick the game runs.
+OnCinematicCutscenePlay -- Fired to when a cinematic cutscene plays.
+OnPlayerLand -- Fired to each time the main player lands.
+OnPlayerJump -- Fired to each time the main player jumps.
+OnPlayerAttack -- Fired to each time the main player attacks.
+OnPlayerChargeAttack -- Fired to each time the main player charge attacks.
+OnPlayerJumpAttack -- Fired to each time the main player jump attacks.
+OnPlayerSpottedByEnemy -- Fired to each time the main player is spotted by an enemy.

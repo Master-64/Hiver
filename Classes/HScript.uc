@@ -21,6 +21,7 @@
 // * ScriptData saving -- So much work for so little.
 // * Add a majority of the CutScript actions -- Again, a lot of work for something that may not be used.
 // * Simple conditionals -- Same as above, where I can't see this being used much.
+// * Add an event for OnModLoaded -- I can't see anyone realistically needing this, so I'm not adding it yet.
 
 
 class HScript extends MInfo
