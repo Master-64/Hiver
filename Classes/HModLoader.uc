@@ -116,7 +116,7 @@ function ChainloadMods()
 	{
 		class'HVersion'.static.DebugLog("No mods and no modloader found! Hiver's installation appears to be corrupt. Quitting...");
 
-		U.CC("Quit");
+		Assert(false);
 
 		return;
 	}
