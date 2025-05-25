@@ -41,24 +41,46 @@ event ServerTraveling(string URL, bool bItems)
 function RegisterScriptMods()
 {
 	// Code to load and register all script mods goes here.
-	local int i;
-	local array<string> ScriptFile;
+	local int i, j;
+	local array<string> ScriptFile, MapWhitelist;
+	local bool bAllowedMap;
 	
 	class'HVersion'.static.DebugLog("Beginning to register all script mods...");
 	
 	// Get all mod infos.
 	for(i = 0; i < class'HModLoader'.default.ModInfos.Length; i++)
 	{
-		ScriptMods.Insert(ScriptMods.Length, 1);
-		ScriptMods[ScriptMods.Length - 1] = Spawn(class'HScript');
-		ScriptMods[ScriptMods.Length - 1].Hiver = self;
-		
-		if(InStr(Caps(class'HModLoader'.default.ModInfos[i].ModType), "SCRIPT") != -1)
+		if(InStr(Caps(class'HModLoader'.default.ModInfos[i].ModType), "SCRIPT") == -1)
 		{
 			continue;
 		}
 		
 		// Process script mods...
+		
+		if(!class'HModLoader'.default.ModInfos[i].InstantiateOnMapLoad)
+		{
+			bAllowedMap = false;
+			MapWhitelist = U.Split(Caps(class'HModLoader'.default.ModInfos[i].MapLoadWhiteList), ",");
+			
+			for(j = 0; j < MapWhitelist.Length; j++)
+			{
+				if(Caps(U.GetCurrentMap()) == MapWhitelist[j])
+				{
+					bAllowedMap = true;
+					
+					break;
+				}
+			}
+			
+			if(!bAllowedMap)
+			{
+				continue;
+			}
+		}
+		
+		ScriptMods.Insert(ScriptMods.Length, 1);
+		ScriptMods[ScriptMods.Length - 1] = Spawn(class'HScript');
+		ScriptMods[ScriptMods.Length - 1].Hiver = self;
 		
 		U.LoadStringArray(ScriptFile, "..\\Mods\\Mod" $ string(i) $ "\\" $ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
 		

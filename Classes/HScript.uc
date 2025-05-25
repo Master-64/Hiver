@@ -14,7 +14,7 @@
 // * Script ending
 // * Random number generation
 // * Get actor by tag
-// * Event subscriptions
+// * Events
 // * Math expressions
 // 
 // Future Todo:
