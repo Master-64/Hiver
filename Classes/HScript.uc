@@ -95,6 +95,8 @@ event Tick(float DeltaTime)
 	
 	if(!bEventTick)
 	{
+		ProcessThreadEvents();
+		
 		return;
 	}
 	
@@ -182,6 +184,8 @@ event Tick(float DeltaTime)
 	{
 		bAwaitingSpotting = true;
 	}
+	
+	ProcessThreadEvents();
 }
 
 event PostLoadGame(bool bLoadFromSaveGame)
@@ -942,23 +946,29 @@ function ProcessThreadEvents()
 {
 	local int i, j;
 	
-	for(i = 0; i < Threads.Length; i++)
+	if(ThreadEvents.Length > 0)
 	{
-		for(j = 0; i < ThreadEvents.Length; i++)
+		for(i = 0; i < Threads.Length; i++)
 		{
-			if(Threads[i].sProcessorName == ThreadEvents[j])
+			for(j = 0; i < ThreadEvents.Length; i++)
 			{
-				Threads[i].RestartScript();
-				
-				break;
+				if(Threads[i].sProcessorName == ThreadEvents[j])
+				{
+					Threads[i].RestartScript();
+					
+					break;
+				}
 			}
 		}
+		
+		ThreadEvents.Remove(0, ThreadEvents.Length);
 	}
 }
 
 
 defaultproperties
 {
+	bEventTick=true
 	bAlwaysTick=true
 	bDebug=true
 	bAwaitingAttack=true

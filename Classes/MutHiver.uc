@@ -20,25 +20,18 @@ event PostLoadGame(bool bLoadFromSaveGame)
 	{
 		ModLoader = Spawn(class'HModLoader');
 		ModLoader.Hiver = self;
-
+		
 		GotoState('AwaitModLoader');
-
+		
 		// Process core mutator logic.
 	}
 }
 
 event ServerTraveling(string URL, bool bItems)
 {
-	// local int i;
-
 	ModLoader.SaveConfig();
 	ModLog.SaveConfig();
-
-	// for(i = 0; i < ScriptMods.Length; i++)
-	// {
-	// 	ScriptMods[i].SaveConfig();
-	// }
-
+	
 	if(NextMutator != none)
 	{
 		NextMutator.ServerTraveling(URL, bItems);
@@ -50,50 +43,49 @@ function RegisterScriptMods()
 	// Code to load and register all script mods goes here.
 	local int i;
 	local array<string> ScriptFile;
-
+	
 	class'HVersion'.static.DebugLog("Beginning to register all script mods...");
-
+	
 	// Get all mod infos.
 	for(i = 0; i < class'HModLoader'.default.ModInfos.Length; i++)
 	{
 		ScriptMods.Insert(ScriptMods.Length, 1);
-		// Todo: support event subscriptions here.
 		ScriptMods[ScriptMods.Length - 1] = Spawn(class'HScript');
 		ScriptMods[ScriptMods.Length - 1].Hiver = self;
-
-		if(class'HModLoader'.default.ModInfos[i].ModType != "Script")
+		
+		if(InStr(Caps(class'HModLoader'.default.ModInfos[i].ModType), "SCRIPT") != -1)
 		{
 			continue;
 		}
 		
-		// Process script mods.
-
+		// Process script mods...
+		
 		U.LoadStringArray(ScriptFile, "..\\Mods\\Mod" $ string(i) $ "\\" $ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
 		
 		if(ScriptFile.Length == 0)
 		{
-			class'HVersion'.static.DebugLog("Did not find script file" @ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs");
+			class'HVersion'.static.DebugLog("Did not find script file" @ class'HModLoader'.default.ModInfos[i].ModFileName $ ".hs.");
 			
 			continue;
 		}
 		
 		ScriptMods[ScriptMods.Length - 1].Init(ScriptFile);
-
+		
 		class'HVersion'.static.DebugLog(class'HModLoader'.default.ModInfos[i].Name @ class'HModLoader'.default.ModInfos[i].Version @ "script loaded...");
 	}
-
-	class'HVersion'.static.DebugLog("All scripts registered.");
+	
+	class'HVersion'.static.DebugLog("All script mods registered.");
 }
 
 state AwaitModLoader
 {
 	Begin:
-
+	
 	while(!ModLoader.bReadyToPlay)
 	{
 		Sleep(0.000001);
 	}
-
+	
 	RegisterScriptMods();
 }
 

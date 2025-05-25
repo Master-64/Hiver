@@ -20,7 +20,7 @@ var MutHiver Hiver;
 var config array<ModInfo> ModInfos;
 var bool bReadyToPlay;
 
-// Temp stuff
+// Temporary variables.
 var string sURL;
 var bool bSkipMovies;
 
@@ -32,43 +32,43 @@ event PostLoadGame(bool bLoadFromSaveGame)
 		if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
 		{
 			class'HVersion'.static.DebugLog("Starting up Hiver...");
-
+			
 			ChainloadMods();
-
+			
 			Hiver.ModLog.FlushLog();
 			
 			GotoState('IntroMovies');
-
+			
 			return;
 		}
-
+		
 		GotoState('InitModLoader');
 	}
 }
 
 function ChainloadMods()
 {
-	local array<string> TokenArray;
+	local array<string> ModTypes, TokenArray;
 	local string sMutators;
-	local int i, j;
+	local int i, j, k;
 	
 	class'HVersion'.static.DebugLog("Beginning to chainload all mods...");
-
+	
 	ModInfos.Remove(0, ModInfos.Length);
-
-	// Get all mod infos
-	for(i = 0; i < 99999; i++)
+	
+	// Get all mod infos.
+	for(i = 0; i < 32767; i++)
 	{
-		// This will return true when all mods have been iterated through
+		// This will return true when all mods have been iterated through.
 		if(InStr(Localize("Info", "Name", "..\\Mods\\Mod" $ string(i) $ "\\Mod"), "Mod.Info.Name") != -1)
 		{
-			class'HVersion'.static.DebugLog("A 'No localization' log should be above this log. This is fine.");
-
+			class'HVersion'.static.DebugLog("A 'No localization' log should be above this log. This is expected.");
+			
 			break;
 		}
-
+		
 		ModInfos.Insert(ModInfos.Length, 1);
-
+		
 		ModInfos[i].ModDirectory = "..\\Mods\\Mod" $ string(i);
 		ModInfos[i].Name = Localize("Info", "Name", "..\\Mods\\Mod" $ string(i) $ "\\Mod");
 		ModInfos[i].Blurb = Localize("Info", "Blurb", "..\\Mods\\Mod" $ string(i) $ "\\Mod");
@@ -86,53 +86,58 @@ function ChainloadMods()
 		ModInfos[i].LaunchOptions = Localize("ModInstantiation", "LaunchOptions", "..\\Mods\\Mod" $ string(i) $ "\\Mod");
 		ModInfos[i].ScriptLoadPriority = byte(Localize("ModScriptOptions", "ScriptLoadPriority", "..\\Mods\\Mod" $ string(i) $ "\\Mod"));
 		
-		switch(Caps(ModInfos[i].ModType))
+		ModTypes = U.Split(Caps(ModInfos[i].ModType), ",");
+		
+		for(j = 0; j < ModTypes.Length; j++)
 		{
-			case "CORE":
-				TokenArray = U.Split(Caps(ModInfos[i].LaunchOptions), ",");
-				
-				for(j = 0; j < TokenArray.Length; j++)
-				{
-					if(TokenArray[i] == "NOVID")
+			switch(ModTypes[j])
+			{
+				case "CORE":
+					TokenArray = U.Split(Caps(ModInfos[i].LaunchOptions), ",");
+					
+					for(k = 0; k < TokenArray.Length; k++)
 					{
-						bSkipMovies = true;
+						if(TokenArray[k] == "NOVID")
+						{
+							bSkipMovies = true;
+						}
 					}
-				}
-				
-				break;
-			case "MUTATOR":
-				if(Len(sMutators) == 0)
-				{
-					sMutators = ModInfos[i].ModFileName $ "." $ ModInfos[i].MutatorClassName;
-				}
-				else
-				{
-					sMutators = sMutators $ "," $ ModInfos[i].ModFileName $ "." $ ModInfos[i].MutatorClassName;
-				}
-
-				break;
-			case "SCRIPT":
-				break;
-			default:
-				break;
+					
+					break;
+				case "MUTATOR":
+					if(Len(sMutators) == 0)
+					{
+						sMutators = ModInfos[i].ModFileName $ "." $ ModInfos[i].MutatorClassName;
+					}
+					else
+					{
+						sMutators = sMutators $ "," $ ModInfos[i].ModFileName $ "." $ ModInfos[i].MutatorClassName;
+					}
+					
+					break;
+				case "SCRIPT":
+					break;
+				default:
+					break;
+			}
 		}
-
+		
 		class'HVersion'.static.DebugLog(ModInfos[i].Name @ ModInfos[i].Version @ "loaded...");
 	}
-
+	
 	if(ModInfos.Length == 0)
 	{
 		class'HVersion'.static.DebugLog("No mods and no modloader found! Hiver's installation appears to be corrupt. Quitting...");
-
+		
 		Assert(false);
-
+		
 		return;
 	}
-
+	
 	class'HVersion'.static.DebugLog("Prepared" @ string(i) @ "mods for loading.");
-
+	
 	SaveConfig();
-
+	
 	if(sMutators == "")
 	{
 		sURL = "Book_FrontEnd";
@@ -141,61 +146,61 @@ function ChainloadMods()
 	{
 		sURL = "Book_FrontEnd?Mutator=" $ sMutators;
 	}
-
+	
 	class'HVersion'.static.DebugLog("Chainloading process complete. Loading" @ string(i) @ "mods after map load...");
 }
 
 state InitModLoader
 {
 	Begin:
-
+	
 	while(Hiver == none)
 	{
 		Sleep(0.000001);
 	}
-
+	
 	class'HVersion'.static.DebugLog("Hiver initialized...");
-
+	
 	bReadyToPlay = true;
 }
 
 state IntroMovies
 {
 	Begin:
-
+	
 	U.GetHUD().bHideHud = true;
-
+	
 	if(!bSkipMovies)
 	{
 		U.FancyPlayMovie("DW_LOGO", true);
-
+		
 		while(U.IsMoviePlaying())
 		{
 			Sleep(0.000001);
 		}
-
+		
 		U.FancyPlayMovie("ACTIVSN", true);
-
+		
 		while(U.IsMoviePlaying())
 		{
 			Sleep(0.000001);
 		}
-
+		
 		U.FancyPlayMovie("KWLOGO", true);
-
+		
 		while(U.IsMoviePlaying())
 		{
 			Sleep(0.000001);
 		}
-
+		
 		U.FancyPlayMovie("HiverLogo", true);
-
+		
 		while(U.IsMoviePlaying())
 		{
 			Sleep(0.000001);
 		}
 	}
-
-	// Start the game
+	
+	// Start the game.
 	U.CC("Open" @ sURL);
 }

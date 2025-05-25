@@ -16,11 +16,11 @@ var bool bUpdateOnLog;
 function FlushLog()
 {
 	local array<string> sTemp;
-
+	
 	default.Log = sTemp;
-
+	
 	SaveConfig();
-
+	
 	class'HVersion'.static.DebugLog("Mod log flushed.");
 }
 
