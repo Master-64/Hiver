@@ -62,8 +62,11 @@ function Init(array<string> ScriptFile)
 			Threads.Insert(Threads.Length, 1);
 			Threads[Threads.Length - 1] = Spawn(class'HScriptProcessor');
 			P = Threads[Threads.Length - 1];
+			P.HScript = self;
 			
 			P.sProcessorName = Caps(Mid(ScriptFile[i], 1, Len(ScriptFile[i]) - 2));
+			
+			i++;
 			
 			// Get all script lines.
 			for(j = i; j < ScriptFile.Length; j++)
@@ -248,10 +251,15 @@ function EndScript(HScriptProcessor P)
 // Processes the current line in the script.
 function string ProcessAction(HScriptProcessor P, string sAction, out string sLog)
 {
-	local string command;
-	local array<string> args;
+	local string command, sActionTemp;
+	local array<string> args, TokenArray;
 	
-	args = U.Split(sAction);
+	TokenArray = U.Split(sAction);
+	command = TokenArray[0];
+	
+	sActionTemp = sAction;
+	U.RemoveText(sActionTemp, command);
+	args = QuoteSplit(sActionTemp);
 	
 	if(args.Length < 1)
 	{
@@ -260,30 +268,73 @@ function string ProcessAction(HScriptProcessor P, string sAction, out string sLo
 		return "";
 	}
 	
-	command = args[0];
-	args.Remove(0, 1);
-	
-	ParseQuotes(args, sAction);
-	
 	return ProcessCommand(P, command, args, sLog);
+}
+
+// Works identically to the Split() function, but it does NOT split data that is inside quotes.
+function array<string> QuoteSplit(string sLine, optional string delimiter)
+{
+	local array<string> parts;
+	local int i;
+	local bool isInQuote;
+	local string currentPart;
+	
+	if(delimiter == "")
+	{
+		delimiter = " ";
+	}
+	
+	for(i = 0; i < Len(sLine); i++)
+	{
+		if(Mid(sLine, i, 1) == chr(34))
+		{
+			isInQuote = !isInQuote;
+			
+			continue;
+		}
+		else if(Mid(sLine, i, 1) == delimiter && !isInQuote)
+		{
+			if(currentPart != "")
+			{
+				parts.Insert(parts.Length, 1);
+				parts[parts.Length - 1] = currentPart;
+			}
+			
+			currentPart = "";
+		}
+		else
+		{
+			currentPart = currentPart $ Mid(sLine, i, 1);
+		}
+	}
+	
+	if(currentPart != "")
+	{
+		parts.Insert(parts.Length, 1);
+		parts[parts.Length - 1] = currentPart;
+	}
+	
+	return parts;
 }
 
 // Calculates all goto pointers.
 function ProcessGotos(HScriptProcessor P)
 {
+	local string command, sActionTemp;
 	local int i;
-	local string command;
-	local array<string> args;
+	local array<string> args, TokenArray;
 	
 	P.Gotos.Remove(0, P.Gotos.Length);
 	
 	// Determine where all the labels are at, then save their locations.
 	for(i = 0; i < P.Script.Length; i++)
 	{
-		args.Remove(0, args.Length);
-		args = U.Split(P.Script[i]);
-		command = args[0];
-		args.Remove(0, 1);
+		TokenArray = U.Split(P.Script[i]);
+		command = TokenArray[0];
+		
+		sActionTemp = P.Script[i];
+		U.RemoveText(sActionTemp, command);
+		args = QuoteSplit(sActionTemp);
 		
 		if(Caps(command) == "LABEL")
 		{
@@ -317,135 +368,61 @@ function int GetGotoLineByLabel(HScriptProcessor P, string sLabel)
 	return -1;
 }
 
-// Takes a batch of arguments, then determines where all the quotes are, and makes sure that spaces inside quotes are preserved.
-// Todo: make sure the quotes are removed.
-function ParseQuotes(out array<string> args, string sLine)
-{
-	local string currentArg;
-	local array<string> newArgs;
-	local int i, iStartQuoteIndex, iEndQuoteIndex, iSpaceIndex;
-	
-	for(i = 0; i < Len(sLine); i++)
-	{
-		// Check for the start of a quote.
-		if(InStr(Left(sLine, Len(sLine) - i + 1), chr(34)) != -1)
-		{
-			// Found the start of a quote.
-			iStartQuoteIndex = i;
-			
-			// Move to find the end quote.
-			iEndQuoteIndex = InStr(Right(sLine, Len(sLine) - iStartQuoteIndex + 1), chr(34));
-			
-			// Ensure it's a full quote.
-			if(iEndQuoteIndex != -1)
-			{
-				// Adjust index to original string.
-				iEndQuoteIndex += iStartQuoteIndex - 1;
-				
-				// Extract the quoted string.
-				currentArg = Mid(sLine, iStartQuoteIndex, iEndQuoteIndex - iStartQuoteIndex + 1);
-				
-				// Add the quoted string for newArgs.
-				newArgs.Insert(newArgs.Length, 1);
-				newArgs[newArgs.Length - 1] = currentArg;
-				
-				// Move the index past the end quote.
-				i = iEndQuoteIndex + 1;
-			}
-			else
-			{
-				// No valid end quote found, continue to next character.
-				continue;
-			}
-		}
-		else
-		{
-			// Handle non-quoted arguments.
-			iSpaceIndex = InStr(Left(sLine, Len(sLine) - i + 1), " ");
-			
-			// Found a space.
-			if(iSpaceIndex != -1)
-			{
-				// Extract the argument.
-				currentArg = Mid(sLine, i, iSpaceIndex - 1);
-				newArgs.Insert(newArgs.Length, 1);
-				newArgs[newArgs.Length - 1] = currentArg;
-				
-				// Move past the space.
-				i += iSpaceIndex;
-			}
-			else
-			{
-				// If no more spaces, take the rest of the string.
-				currentArg = Mid(sLine, i);
-				newArgs.Insert(newArgs.Length, 1);
-				newArgs[newArgs.Length - 1] = currentArg;
-				
-				break;
-			}
-		}
-	}
-	
-	args = newArgs;
-}
-
 // Takes a full line, parses it as action(s) (parentheses can nest actions), and queues them all up next in the action list.
 function bool ParseActions(HScriptProcessor P, string sLine)
 {
-	local int i, j, iStartIndex, iEndIndex, iNestCount, iTotalNestCount;
+	local int i, j, iPar1Count, iPar2Count, iPar3Count;
+	local bool bInString;
 	
 	P.iCurrentAction = 0;
 	
-	// Get the total amount of nests.
 	for(i = 0; i < Len(sLine); i++)
 	{
-		if(Mid(sLine, i, 1) == "(")
+		if(Mid(sLine, i, 1) == "(" && !bInString)
 		{
-			iTotalNestCount++;
+			iPar1Count++;
 		}
-	}
-	
-	// Get each nested action, and parse.
-	for(i = iTotalNestCount; i >= 0; i--)
-	{
-		iNestCount = 0;
-		
-		for(j = 0; j < Len(sLine); j++)
+		else if(Mid(sLine, i, 1) == ")")
 		{
-			switch(Mid(sLine, j, 1))
+			if(iPar1Count > 0 && !bInString)
 			{
-				case "(":
-					if(iNestCount == i)
+				iPar2Count++;
+				iPar3Count = 0;
+				
+				for(j = i; j > -1; j--)
+				{
+					if(Mid(sLine, j, 1) == "(")
 					{
-						// Mark the start of the outermost parentheses.
-						iStartIndex = j;
-					}
-					
-					// Increment for each '(' found.
-					iNestCount++;
-					
-					break;
-				case ")":
-					// Decrement for each ')' found.
-					iNestCount--;
-					
-					if(iNestCount == i)
-					{
-						// Mark the end of the outermost parentheses.
-						iEndIndex = j;
+						iPar3Count++;
 						
-						P.Actions.Insert(P.Actions.Length, 1);
-						P.Actions[P.Actions.Length - 1] = Mid(sLine, iStartIndex + 1, iEndIndex - iStartIndex - 1);
+						if(iPar1Count - iPar2Count == iPar3Count)
+						{
+							P.Actions.Insert(P.Actions.Length, 1);
+							P.Actions[P.Actions.Length - 1] = Mid(sLine, j + 1, i - j - 1);
+							P.iActionTotal++;
+							
+							break;
+						}
 					}
-					
-					break;
+				}
 			}
 		}
+		if(Mid(sLine, i, 1) == chr(34))
+		{
+			bInString = !bInString;
+		}
 	}
 	
-	P.iActionTotal = Max(P.Actions.Length, 1);
+	if(bInString || iPar1Count > 0)
+	{
+		class'HVersion'.static.DebugLog("Error: Quote or parenthesis not properly closed!");
+	}
 	
-	return iNestCount != 0;
+	P.Actions.Insert(P.Actions.Length, 1);
+	P.Actions[P.Actions.Length - 1] = sLine;
+	P.iActionTotal++;
+	
+	return false;
 }
 
 // Takes a command with arguments and processes all their custom script logic. Returns a string if the command does so.
@@ -466,6 +443,13 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 	
 	// Clear the return value before starting.
 	P.sReturn = "";
+	
+	class'HVersion'.static.DebugLog("Processing a" @ command @ "command!");
+	
+	for(i = 0; i < args.Length; i++)
+	{
+		class'HVersion'.static.DebugLog(args[i]);
+	}
 	
 	switch(command)
 	{
@@ -579,16 +563,16 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 			switch(args.Length)
 			{
 				case 1:
-					U.Announce(args[0]);
+					U.Announce(args[0],, U.MakeColor(255, 255, 255, 255));
 					
 					break;
 				case 2:
-					U.Announce(args[0], float(args[1]));
+					U.Announce(args[0], float(args[1]), U.MakeColor(255, 255, 255, 255));
 					
 					break;
 			}
 			
-			sLog = "Announcing the text:" @ args[0] @ ".";
+			sLog = "Announcing the text:" @ args[0] $ ".";
 			
 			break;
 		case "SLEEP":
@@ -955,6 +939,9 @@ function ProcessThreadEvents()
 				if(Threads[i].sProcessorName == ThreadEvents[j])
 				{
 					Threads[i].RestartScript();
+					
+					ThreadEvents.Remove(j, 1);
+					j--;
 					
 					break;
 				}

@@ -194,5 +194,6 @@ state ScriptEnd
 
 defaultproperties
 {
+	bDebug=true
 	bAlwaysTick=true
 }
