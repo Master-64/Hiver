@@ -63,7 +63,7 @@ function Init(array<string> ScriptFile)
 			Threads[Threads.Length - 1] = Spawn(class'HScriptProcessor');
 			P = Threads[Threads.Length - 1];
 			
-			P.sProcessorName = Caps(Mid(ScriptFile[i], 1, Len(ScriptFile[i]) - 1));
+			P.sProcessorName = Caps(Mid(ScriptFile[i], 1, Len(ScriptFile[i]) - 2));
 			
 			// Get all script lines.
 			for(j = i; j < ScriptFile.Length; j++)
@@ -938,7 +938,7 @@ function HScriptProcessor GetThreadByName(string sName)
 function QueueThreadEvent(string sName)
 {
 	ThreadEvents.Insert(ThreadEvents.Length, 1);
-	ThreadEvents[ThreadEvents.Length - 1] = sName;
+	ThreadEvents[ThreadEvents.Length - 1] = Caps(sName);
 }
 
 // Processes all thread events. Uses two loops to respect the order of sequences in the script file.
@@ -950,7 +950,7 @@ function ProcessThreadEvents()
 	{
 		for(i = 0; i < Threads.Length; i++)
 		{
-			for(j = 0; i < ThreadEvents.Length; i++)
+			for(j = 0; j < ThreadEvents.Length; j++)
 			{
 				if(Threads[i].sProcessorName == ThreadEvents[j])
 				{

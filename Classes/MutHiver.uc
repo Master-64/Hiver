@@ -18,6 +18,8 @@ event PostLoadGame(bool bLoadFromSaveGame)
 {
 	if(!bLoadFromSaveGame)
 	{
+		class'HVersion'.static.DebugLog("Hiver mutator loaded.");
+		
 		ModLoader = Spawn(class'HModLoader');
 		ModLoader.Hiver = self;
 		

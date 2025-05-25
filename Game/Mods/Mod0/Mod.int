@@ -31,7 +31,7 @@ Others=
 ; * Mutator -- A mod built with UnrealScript
 ; * Script -- A mod built with HiverScript
 ; Types can be separated with commas
-ModType=Core
+ModType=Core,Mutator
 ; The exact name of the mod file to open
 ModFileName=Hiver
 ; If ModType=Mutator, then pass the class name that should be instantiated on map load
@@ -46,8 +46,3 @@ MapLoadWhiteList=
 ; Optional launch options
 ; Options can be separated with commas
 LaunchOptions=
-
-[ModScriptOptions]
-; This entire section is only relevant for script users
-; The priority of the script loading over other scripts. Higher values equal higher priority. The maximum value is 255
-ScriptLoadPriority=250

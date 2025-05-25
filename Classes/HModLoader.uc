@@ -13,7 +13,6 @@ struct ModInfo
 {
 	var string ModDirectory, Name, Blurb, Description, Version, Langauge, Authors, Coauthors, Others, ModType, ModFileName, LaunchOptions, MutatorClassName, MapLoadWhiteList;
 	var bool InstantiateOnMapLoad;
-	var byte ScriptLoadPriority;
 };
 
 var MutHiver Hiver;
@@ -84,7 +83,6 @@ function ChainloadMods()
 		ModInfos[i].InstantiateOnMapLoad = bool(Localize("ModInstantiation", "InstantiateOnMapLoad", "..\\Mods\\Mod" $ string(i) $ "\\Mod"));
 		ModInfos[i].MapLoadWhiteList = Localize("ModInstantiation", "MapLoadWhiteList", "..\\Mods\\Mod" $ string(i) $ "\\Mod");
 		ModInfos[i].LaunchOptions = Localize("ModInstantiation", "LaunchOptions", "..\\Mods\\Mod" $ string(i) $ "\\Mod");
-		ModInfos[i].ScriptLoadPriority = byte(Localize("ModScriptOptions", "ScriptLoadPriority", "..\\Mods\\Mod" $ string(i) $ "\\Mod"));
 		
 		ModTypes = U.Split(Caps(ModInfos[i].ModType), ",");
 		
