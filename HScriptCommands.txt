@@ -13,8 +13,8 @@ LOG TEXT -- Logs TEXT, supports multiple arguments for automatic spaces.
 GOTO/GOTOLABEL LABEL -- Goes to LABEL, skipping any script lines in the process, and can go backward.
 LABEL LABEL -- Used to mark a label for the GOTO/GOTOLABEL command.
 END/STOP/BREAK -- Ends the script.
-RANDOMNUMBER/RANDNUM -- Returns a random number between MIN and MAX.
-RANDOMFLOAT/RANDFLOAT -- Returns a random float (decimal value) between MIN and MAX.
+RANDOMNUMBER/RANDNUM MIN MAX -- Returns a random number between MIN and MAX.
+RANDOMFLOAT/RANDFLOAT MIN MAX -- Returns a random float (decimal value) between MIN and MAX.
 LOCATEACTOR TAG -- Returns an actor pointer from the first actor found with the tag TAG.
 EVALUATEEXPRESSION/EVAL EQUATION -- Processes EQUATION as an equation and returns the solution. Do not use spaces unless you're using quotes!
 

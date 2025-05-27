@@ -126,8 +126,6 @@ state ScriptLogic
 	
 	while(iCurrentLine < Script.Length)
 	{
-		Actions.Remove(0, Actions.Length);
-		
 		ParseActions(Script[iCurrentLine]);
 		
 		while(iCurrentAction < Actions.Length)

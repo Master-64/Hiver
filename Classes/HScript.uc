@@ -374,6 +374,7 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 	local int i, j, iPar1Count, iPar2Count, iPar3Count;
 	local bool bInString;
 	
+	P.Actions.Remove(0, P.Actions.Length);
 	P.iCurrentAction = 0;
 	
 	for(i = 0; i < Len(sLine); i++)
