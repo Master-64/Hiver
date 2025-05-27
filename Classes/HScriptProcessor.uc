@@ -115,10 +115,7 @@ state ScriptLogic
 		
 		for(i = iCurrentAction + 1; i < Actions.Length; i++)
 		{
-			if(i + 1 < Actions.Length)
-			{
-				ReplaceText(Actions[i + 1], "(" $ Actions[iCurrentAction] $ ")", sReturn);
-			}
+			ReplaceText(Actions[i], "(" $ Actions[iCurrentAction] $ ")", sReturn);
 		}
 	}
 	

@@ -371,7 +371,7 @@ function int GetGotoLineByLabel(HScriptProcessor P, string sLabel)
 // Takes a full line, parses it as action(s) (parentheses can nest actions), and queues them all up next in the action list.
 function bool ParseActions(HScriptProcessor P, string sLine)
 {
-	local int i, j, iPar1Count, iPar2Count, iPar3Count;
+	local int i, j, k, iParDepth;
 	local bool bInString;
 	
 	P.Actions.Remove(0, P.Actions.Length);
@@ -381,22 +381,21 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 	{
 		if(Mid(sLine, i, 1) == "(" && !bInString)
 		{
-			iPar1Count++;
+			iParDepth++;
 		}
 		else if(Mid(sLine, i, 1) == ")")
 		{
-			if(iPar1Count > 0 && !bInString)
+			if(!bInString)
 			{
-				iPar2Count++;
-				iPar3Count = 0;
+				iParDepth--;
 				
 				for(j = i; j > -1; j--)
 				{
 					if(Mid(sLine, j, 1) == "(")
 					{
-						iPar3Count++;
+						k++;
 						
-						if(iPar1Count - iPar2Count == iPar3Count)
+						if(iParDepth + 1 == k)
 						{
 							P.Actions.Insert(P.Actions.Length, 1);
 							P.Actions[P.Actions.Length - 1] = Mid(sLine, j + 1, i - j - 1);
@@ -414,7 +413,7 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 		}
 	}
 	
-	if(bInString || iPar1Count > 0)
+	if(bInString || iParDepth != 0)
 	{
 		class'HVersion'.static.DebugLog("Error: Quote or parenthesis not properly closed!");
 	}

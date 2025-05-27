@@ -20,6 +20,6 @@ static function DebugLog(string S)
 
 defaultproperties
 {
-	Version="Build 21 [Beta]"
+	Version="Build 22 [Beta]"
 	ModName="Hiver"
 }
