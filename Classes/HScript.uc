@@ -261,13 +261,6 @@ function string ProcessAction(HScriptProcessor P, string sAction, out string sLo
 	U.RemoveText(sActionTemp, command);
 	args = QuoteSplit(sActionTemp);
 	
-	if(args.Length < 1)
-	{
-		class'HVersion'.static.DebugLog("Line/action not formatted correctly!");
-		
-		return "";
-	}
-	
 	return ProcessCommand(P, command, args, sLog);
 }
 

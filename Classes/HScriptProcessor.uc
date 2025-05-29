@@ -145,7 +145,7 @@ state ScriptLogic
 			// DEBUG!
 			if(bDebug)
 			{
-				class'HVersion'.static.DebugLog("HiverScriptLog [" $ string(iCurrentLine) $ "](" $ string(iCurrentAction) $ "/" $ string(iActionTotal) $ "):" @ sLog);
+				class'HVersion'.static.DebugLog("HiverScriptLog [" $ string(iCurrentLine) $ "](" $ string(iCurrentAction + 1) $ "/" $ string(iActionTotal) $ "):" @ sLog);
 			}
 			
 			if(sReturn != "")
@@ -166,6 +166,7 @@ state ScriptLogic
 				HScript.ClearActions(self, true);
 				
 				iCurrentAction = iGotoLine;
+				iCurrentLine = iGotoLine - 1;
 			}
 			
 			// Handle end logic if applicable.
