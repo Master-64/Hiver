@@ -113,6 +113,7 @@ state ScriptLogic
 	{
 		local int i;
 		
+		// Master_64: Yes, I know this can be flawed in certain rare circumstances, but I'm not touching it yet.
 		for(i = iCurrentAction + 1; i < Actions.Length; i++)
 		{
 			ReplaceText(Actions[i], "(" $ Actions[iCurrentAction] $ ")", sReturn);
@@ -162,7 +163,7 @@ state ScriptLogic
 			{
 				bGoto = false;
 				
-				Actions.Remove(0, Actions.Length);
+				HScript.ClearActions(self, true);
 				
 				iCurrentAction = iGotoLine;
 			}

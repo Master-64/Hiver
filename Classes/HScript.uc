@@ -368,14 +368,25 @@ function int GetGotoLineByLabel(HScriptProcessor P, string sLabel)
 	return -1;
 }
 
+// Clears the current list of actions.
+function ClearActions(HScriptProcessor P, optional bool bDoNotSetActionNumToZero)
+{
+	P.Actions.Remove(0, P.Actions.Length);
+	P.iActionTotal = 0;
+	
+	if(!bDoNotSetActionNumToZero)
+	{
+		P.iCurrentAction = 0;
+	}
+}
+
 // Takes a full line, parses it as action(s) (parentheses can nest actions), and queues them all up next in the action list.
 function bool ParseActions(HScriptProcessor P, string sLine)
 {
-	local int i, j, k, iParDepth;
+	local int i, j, k, iParDepth, iClosingPar;
 	local bool bInString;
 	
-	P.Actions.Remove(0, P.Actions.Length);
-	P.iCurrentAction = 0;
+	ClearActions(P);
 	
 	for(i = 0; i < Len(sLine); i++)
 	{
@@ -383,29 +394,27 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 		{
 			iParDepth++;
 		}
-		else if(Mid(sLine, i, 1) == ")")
+		else if(Mid(sLine, i, 1) == ")" && !bInString)
 		{
-			if(!bInString)
+			iClosingPar++;
+			k = 0;
+			
+			for(j = i; j > -1; j--)
 			{
-				iParDepth--;
-				
-				for(j = i; j > -1; j--)
+				if(Mid(sLine, j, 1) == "(")
 				{
-					if(Mid(sLine, j, 1) == "(")
+					k++;
+					
+					if(iClosingPar == k)
 					{
-						k++;
+						QueueAction(P, Mid(sLine, j + 1, i - j - 1));
 						
-						if(iParDepth + 1 == k)
-						{
-							P.Actions.Insert(P.Actions.Length, 1);
-							P.Actions[P.Actions.Length - 1] = Mid(sLine, j + 1, i - j - 1);
-							P.iActionTotal++;
-							
-							break;
-						}
+						break;
 					}
 				}
 			}
+			
+			iParDepth--;
 		}
 		if(Mid(sLine, i, 1) == chr(34))
 		{
@@ -418,9 +427,7 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 		class'HVersion'.static.DebugLog("Error: Quote or parenthesis not properly closed!");
 	}
 	
-	P.Actions.Insert(P.Actions.Length, 1);
-	P.Actions[P.Actions.Length - 1] = sLine;
-	P.iActionTotal++;
+	QueueAction(P, sLine);
 	
 	return false;
 }
@@ -916,6 +923,14 @@ function HScriptProcessor GetThreadByName(string sName)
 			return Threads[i];
 		}
 	}
+}
+
+// Queues a thread event by processor name.
+function QueueAction(HScriptProcessor P, string sName)
+{
+	P.Actions.Insert(P.Actions.Length, 1);
+	P.Actions[P.Actions.Length - 1] = sName;
+	P.iActionTotal++;
 }
 
 // Queues a thread event by processor name.
