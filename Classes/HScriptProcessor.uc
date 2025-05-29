@@ -15,7 +15,7 @@ var array<string> Script, Actions;
 var array<HScript.GotoStruct> Gotos;
 var string sReturn, sLatentReturn, sLog, sLatentLog;
 var bool bDebug, bSleeping, bSlept, bGoto, bEnd;
-var int iCurrentLine, iCurrentAction, iActionTotal, iGotoLine;
+var int iCurrentLine, iCurrentAction, iActionTotal, iGotoLine, iIterationCount;
 
 
 function StartScript(optional int iLine)
@@ -128,6 +128,8 @@ state ScriptLogic
 		
 		while(iCurrentAction < Actions.Length)
 		{
+			iIterationCount++;
+			
 			sReturn = ProcessAction(Actions[iCurrentAction], sLog);
 			
 			// If command is latent, wait for it's true return value.
@@ -167,6 +169,19 @@ state ScriptLogic
 				
 				iCurrentAction = iGotoLine;
 				iCurrentLine = iGotoLine - 1;
+				
+				iIterationCount = 0;
+				
+				// Wait a tick to prevent a loop crash.
+				Sleep(0.000001);
+			}
+			
+			if(iIterationCount > 32)
+			{
+				iIterationCount = 0;
+				
+				// Wait a tick to prevent a loop crash.
+				Sleep(0.000001);
 			}
 			
 			// Handle end logic if applicable.

@@ -383,6 +383,11 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 	
 	for(i = 0; i < Len(sLine); i++)
 	{
+		if(Mid(sLine, i, 1) == chr(34))
+		{
+			bInString = !bInString;
+		}
+		
 		if(Mid(sLine, i, 1) == "(" && !bInString)
 		{
 			iParDepth++;
@@ -394,7 +399,12 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 			
 			for(j = i; j > -1; j--)
 			{
-				if(Mid(sLine, j, 1) == "(")
+				if(Mid(sLine, j, 1) == chr(34))
+				{
+					bInString = !bInString;
+				}
+				
+				if(Mid(sLine, j, 1) == "(" && !bInString)
 				{
 					k++;
 					
@@ -408,10 +418,6 @@ function bool ParseActions(HScriptProcessor P, string sLine)
 			}
 			
 			iParDepth--;
-		}
-		if(Mid(sLine, i, 1) == chr(34))
-		{
-			bInString = !bInString;
 		}
 	}
 	
@@ -435,11 +441,6 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 	
 	// Cap all command input strings.
 	command = Caps(command);
-	
-	for(i = 0; i < args.Length; i++)
-	{
-		args[i] = Caps(args[i]);
-	}
 	
 	// Clear the return value before starting.
 	P.sReturn = "";
@@ -738,7 +739,7 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 			{
 				sLog = "Failed to find actor with tag '" @ args[0] $ "'.";
 				
-				break;
+				return "None";
 			}
 			
 			sLog = "Returning actor pointer" @ string(aTemp) @ "with tag '" @ args[0] $ "'.";
