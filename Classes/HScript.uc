@@ -445,13 +445,6 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 	// Clear the return value before starting.
 	P.sReturn = "";
 	
-	class'HVersion'.static.DebugLog("Processing a" @ command @ "command!");
-	
-	for(i = 0; i < args.Length; i++)
-	{
-		class'HVersion'.static.DebugLog(args[i]);
-	}
-	
 	switch(command)
 	{
 		case "SETVARIABLE":
