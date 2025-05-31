@@ -43,7 +43,7 @@ var MutHiver Hiver;
 var array<HScriptProcessor> Threads;
 var array<string> ThreadEvents;
 var array<ScriptDataStruct> ScriptData;
-var bool bDebug, bEventTick, bHasTicked, bWasInCutscene, bAwaitingAttack, bAwaitingSpotting;
+var bool bEventTick, bHasTicked, bWasInCutscene, bAwaitingAttack, bAwaitingSpotting;
 var float fOldfLastLandedTime;
 
 
@@ -688,8 +688,7 @@ function string ProcessCommand(HScriptProcessor P, string command, array<string>
 			sLog = "Going to label:" @ args[0] @ "on line" @ string(iTemp) $ ".";
 			
 			break;
-		case "LABEL":
-			break;
+		case "LABEL": break;
 		case "END":
 		case "STOP":
 		case "BREAK":
@@ -865,7 +864,7 @@ function int GetVariableIndexByName(string PropName)
 	
 	for(i = 0; i < default.ScriptData.Length; i++)
 	{
-		if(default.ScriptData[i].sName == PropName)
+		if(Caps(default.ScriptData[i].sName) == PropName)
 		{
 			return i;
 		}
@@ -903,7 +902,7 @@ function string GetProperty(string PropName)
 	}
 }
 
-// Returns a thread by its' processor name.
+// Returns a thread by its processor name.
 function HScriptProcessor GetThreadByName(string sName)
 {
 	local int i;
@@ -966,7 +965,6 @@ defaultproperties
 {
 	bEventTick=true
 	bAlwaysTick=true
-	bDebug=true
 	bAwaitingAttack=true
 	bAwaitingSpotting=true
 }

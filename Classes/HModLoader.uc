@@ -17,7 +17,7 @@ struct ModInfo
 
 var MutHiver Hiver;
 var config array<ModInfo> ModInfos;
-var bool bReadyToPlay;
+var bool bReadyToPlay, bLoadHiver;
 
 // Temporary variables.
 var string sURL;
@@ -26,23 +26,7 @@ var bool bSkipMovies;
 
 event PostLoadGame(bool bLoadFromSaveGame)
 {
-	if(!bLoadFromSaveGame)
-	{
-		if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
-		{
-			class'HVersion'.static.DebugLog("Starting up Hiver...");
-			
-			ChainloadMods();
-			
-			Hiver.ModLog.FlushLog();
-			
-			GotoState('IntroMovies');
-			
-			return;
-		}
-		
-		GotoState('InitModLoader');
-	}
+	GotoState('InitModLoader');
 }
 
 function ChainloadMods()
@@ -114,9 +98,7 @@ function ChainloadMods()
 					
 					break;
 				case "SCRIPT":
-					break;
-				default:
-					break;
+				default: break;
 			}
 		}
 		
@@ -152,14 +134,49 @@ state InitModLoader
 {
 	Begin:
 	
-	while(Hiver == none)
+	bLoadHiver = Caps(Localize("General", "Modded", "Game")) == "TRUE";
+	
+	if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
 	{
-		Sleep(0.000001);
+		if(bLoadHiver)
+		{
+			class'HVersion'.static.DebugLog("Starting up Hiver...");
+			
+			ChainloadMods();
+			
+			Hiver.ModLog.FlushLog();
+		}
+	}
+	else
+	{
+		while(Hiver == none)
+		{
+			Sleep(0.000001);
+		}
 	}
 	
-	class'HVersion'.static.DebugLog("Hiver initialized...");
+	// Verify the status of Hiver.
+	if(!bLoadHiver && Caps(U.GetCurrentMap()) != "SH2_PREAMBLE")
+	{
+		class'HVersion'.static.DebugLog("Hiver is loaded when it is not supposed to be! Unloading Hiver...");
+		
+		U.UnloadMutators();
+		
+		GotoState('');
+	}
 	
-	bReadyToPlay = true;
+	// Startup logic.
+	if(!bReadyToPlay)
+	{
+		class'HVersion'.static.DebugLog("Hiver initialized...");
+		
+		bReadyToPlay = true;
+	}
+	
+	if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
+	{
+		GotoState('IntroMovies');
+	}
 }
 
 state IntroMovies
@@ -191,14 +208,24 @@ state IntroMovies
 			Sleep(0.000001);
 		}
 		
-		U.FancyPlayMovie("HiverLogo", true);
-		
-		while(U.IsMoviePlaying())
+		if(bLoadHiver)
 		{
-			Sleep(0.000001);
+			U.FancyPlayMovie("HiverLogo", true);
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
 		}
 	}
 	
 	// Start the game.
-	U.CC("Open" @ sURL);
+	if(bLoadHiver)
+	{
+		U.CC("Open" @ sURL);
+	}
+	else
+	{
+		U.CC("Open Book_FrontEnd");
+	}
 }

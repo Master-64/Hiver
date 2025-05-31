@@ -1,10 +1,10 @@
 [Info]
 ; The name of the mod
-Name=Hiver (Modloader)
+Name=SOME MOD NAME
 ; A short description of the mod
-Blurb=A modloader for Shrek 2
+Blurb=SOME SHORT TEXT
 ; A full description of the mod on one line
-Description=A modloader for Shrek 2
+Description=SOME DESCRIPTION
 ; The version of the mod
 Version=v1.0
 ; The three-digit language code the mod was made for
@@ -17,13 +17,13 @@ Version=v1.0
 Langauge=INT
 ; The author(s) of the mod
 ; Authors can be separated with commas
-Authors=Master_64
+Authors=YOUR NAME HERE
 ; The coauthor(s) of the mod
 ; Coauthors can be separated with commas
-Coauthors=
+Coauthors=OTHER NAMES HERE
 ; Anybody who helped with the mod in any way
 ; Others can be separated with commas
-Others=
+Others=MISC NAMES HERE
 
 [ModLoader]
 ; ModType can be the following:
@@ -31,11 +31,11 @@ Others=
 ; * Mutator -- A mod built with UnrealScript
 ; * Script -- A mod built with HiverScript
 ; Types can be separated with commas
-ModType=Core,Mutator
+ModType=SOME MOD TYPE
 ; The exact name of the mod file to open
-ModFileName=Hiver
+ModFileName=SOME MOD NAME
 ; If ModType=Mutator, then pass the class name that should be instantiated on map load
-MutatorClassName=MutHiver
+MutatorClassName=SOME MUTATOR CLASS NAME
 
 [ModInstantiation]
 ; If true, the mod will load on each map load. If false, it will only load when the game is initially loaded. Doesn't matter for mutators

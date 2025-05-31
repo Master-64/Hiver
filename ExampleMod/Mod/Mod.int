@@ -1,0 +1,19 @@
+[Info]
+Name=HiverScript Example Mod
+Blurb=An official example mod
+Description=A HiverScript example mod for Hiver, designed to roughly get you started in HiverScript.
+Version=v1.0
+Langauge=INT
+Authors=Master_64
+Coauthors=
+Others=
+
+[ModLoader]
+ModType=Script
+ModFileName=TestScript
+MutatorClassName=
+
+[ModInstantiation]
+InstantiateOnMapLoad=true
+MapLoadWhiteList=
+LaunchOptions=

@@ -1,0 +1,7 @@
+Each Hiver mod is expected to be inside the "Mods" folder in your game directory, with an incremental number next to the name of the folder name "Mod". For instance, if you have 2 mods installed (named "Mod0" and "Mod1"), then you'd name it "Mod2".
+
+Inside this folder should be a file named Mod.int. You should borrow one from the example mod provided in the download. There, you'll find a lot of variables to configure. Configure these as appropriate. Check "HiverConfig.txt" for more information.
+
+When done, the last thing you'll need to do is point Hiver toward the mod itself. If it's a script, put the script file inside the "Mod" folder that "Mod.int" is inside. If it's a mutator, put the UnrealScript mod in the System folder (this is not loaded unless Hiver explicitly calls it).
+
+Load up Shrek 2 and see if it loads. If it did, you successfully told Hiver what your mod is!
