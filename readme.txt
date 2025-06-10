@@ -5,7 +5,7 @@
 // Mod Version: v1.0 [Release]
 //=============================================================================
 
-Hiver is a mod loader for Shrek 2, designed to make loading mods and maps as easy as possible. It integrates perfectly with the game, requiring no additional set-up past dragging and dropping a set of folder on top of your game, and can also be easily configured.
+Hiver is a mod loader for Shrek 2, designed to make loading mods and maps as easy as possible. It integrates perfectly with the game, requiring no additional set-up past dragging and dropping a set of folders on top of your game, and can also be easily configured.
 
 Hiver contains a scripting language called HiverScript, and it allows modders to make simple script mods for the game. When you learn the language, you can simply register a mod, point it to your script mod, and it'll execute in real-time! While HiverScript is always evolving over time, it's surprisingly powerful. Feel free to look over the documentation for it if you're interested.
 

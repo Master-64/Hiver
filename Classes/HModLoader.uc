@@ -118,16 +118,26 @@ function ChainloadMods()
 	
 	SaveConfig();
 	
-	if(sMutators == "")
+	if(!U.IsShrek22())
 	{
 		sURL = "Book_FrontEnd";
 	}
 	else
 	{
-		sURL = "Book_FrontEnd?Mutator=" $ sMutators;
+		sURL = "0_Storybook_Main_Menu";
+	}
+	
+	if(sMutators != "")
+	{
+		sURL = sURL $ "?Mutator=" $ sMutators;
 	}
 	
 	class'HVersion'.static.DebugLog("Chainloading process complete. Loading" @ string(i) @ "mods after map load...");
+}
+
+function bool IsMainMenu()
+{
+	return (Caps(U.GetCurrentMap()) == "SH2_PREAMBLE") || (U.IsShrek22() && Caps(U.GetCurrentMap()) == "0_PREAMBLE");
 }
 
 state InitModLoader
@@ -136,7 +146,7 @@ state InitModLoader
 	
 	bLoadHiver = Caps(Localize("General", "Modded", "Game")) == "TRUE";
 	
-	if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
+	if(IsMainMenu())
 	{
 		if(bLoadHiver)
 		{
@@ -156,7 +166,7 @@ state InitModLoader
 	}
 	
 	// Verify the status of Hiver.
-	if(!bLoadHiver && Caps(U.GetCurrentMap()) != "SH2_PREAMBLE")
+	if(!bLoadHiver && !IsMainMenu())
 	{
 		class'HVersion'.static.DebugLog("Hiver is loaded when it is not supposed to be! Unloading Hiver...");
 		
@@ -173,7 +183,7 @@ state InitModLoader
 		bReadyToPlay = true;
 	}
 	
-	if(Caps(U.GetCurrentMap()) == "SH2_PREAMBLE")
+	if(IsMainMenu())
 	{
 		GotoState('IntroMovies');
 	}
@@ -187,30 +197,77 @@ state IntroMovies
 	
 	if(!bSkipMovies)
 	{
-		U.FancyPlayMovie("DW_LOGO", true);
-		
-		while(U.IsMoviePlaying())
+		if(!U.IsShrek22())
 		{
-			Sleep(0.000001);
+			U.FancyPlayMovie("DW_LOGO", "1024x768,640x480,512x384",,, true);
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("ACTIVSN", "1024x768,640x480,512x384",,, true);
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("KWLOGO", "1024x768,640x480,512x384",,, true);
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
 		}
-		
-		U.FancyPlayMovie("ACTIVSN", true);
-		
-		while(U.IsMoviePlaying())
+		else
 		{
-			Sleep(0.000001);
-		}
-		
-		U.FancyPlayMovie("KWLOGO", true);
-		
-		while(U.IsMoviePlaying())
-		{
-			Sleep(0.000001);
+			U.FancyPlayMovie("DW_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("ACT_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("1C_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("EG_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("KW_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
+			
+			U.FancyPlayMovie("BK_Logo");
+			
+			while(U.IsMoviePlaying())
+			{
+				Sleep(0.000001);
+			}
 		}
 		
 		if(bLoadHiver)
 		{
-			U.FancyPlayMovie("HiverLogo", true);
+			U.FancyPlayMovie("Hiver_Logo");
 			
 			while(U.IsMoviePlaying())
 			{
@@ -224,7 +281,7 @@ state IntroMovies
 	{
 		U.CC("Open" @ sURL);
 	}
-	else
+	else // Master_64: Shouldn't be in Shrek 2.2 in this part of this class, so I won't add compatibility here.
 	{
 		U.CC("Open Book_FrontEnd");
 	}
